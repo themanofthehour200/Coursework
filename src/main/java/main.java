@@ -10,10 +10,16 @@ public class main {
 
     public static void main(String[] args) {
         openDatabase("courseworkDatabase.db");
-        //UserController.insertUser(2,"Callum","Brown","14-08-2005","Master","callum.brown@test.com","01256767718","test");
-        UserController.selectUsers();
-        //deleteUser();
-        //updateUser();
+
+        AccountController.delete(1);
+        AccountController.selectAll();
+        AccountController.insert(10,"Testers account",500,"USD");
+        AccountController.update(10,"testing account", 400, "GDP");
+        AccountController.search(10);
+
+        //UserController.insertUser(3,"Callum","Brown","14-08-2005","callum.brown@test.com","01256767718","test");
+        //UserController.updateUser(3,"Testing","Testing","1990-01-01","test@test.com","01256","###");
+        //UserController.selectAllUsers();
         // code to get data from, write to the database etc goes here!
         closeDatabase();
     }
