@@ -26,6 +26,11 @@ public class main {
         UserController.selectAll();
         UserController.delete(24);*/
 
+        /*TransactionsController.insert(1,10,100,1,"Test","14-08-2005",1);
+        TransactionsController.update(1,10,200,1,"Test","14-08-2005",1);
+        TransactionsController.selectAll();
+        TransactionsController.search(1);
+        TransactionsController.delete(1); */
 
         // code to get data from, write to the database etc goes here!
         closeDatabase();
