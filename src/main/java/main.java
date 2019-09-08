@@ -11,6 +11,8 @@ public class main {
     public static void main(String[] args) {
         openDatabase("courseworkDatabase.db");
 
+        //Testing tings here
+
         /*
         AccountController.delete(1);
         AccountController.selectAll();
@@ -18,7 +20,7 @@ public class main {
         AccountController.update(10,"testing account", 400, "GDP");
         AccountController.search(10);*/
 
-        out.println("\n\n\n");
+        out.println("\n");
 
         /*
         UserController.insert(23,"Callum","Brown","14-08-2005","callum.brown@test.com","01256767718","test");
@@ -32,13 +34,20 @@ public class main {
         TransactionsController.search(1);
         TransactionsController.delete(1); */
 
-        // code to get data from, write to the database etc goes here!
+        CategoryController.insert(1, "test", 10);
+        CategoryController.update(1, "Food", 10);
+        CategoryController.search(1);
+        CategoryController.insert(2, "test", 10);
+        CategoryController.selectAll();
+        CategoryController.delete(2);
+        CategoryController.selectAll();
+
         closeDatabase();
     }
 
     //establishes a connection to the database
     private static void openDatabase(String dbFile) {
-        try  {
+        try {
             Class.forName("org.sqlite.JDBC");
             SQLiteConfig config = new SQLiteConfig();
             config.enforceForeignKeys(true);//allows referential integrity
@@ -51,7 +60,7 @@ public class main {
     }
 
     //Closes the connection with the database
-    private static void closeDatabase(){
+    private static void closeDatabase() {
         try {
             db.close();
             out.println("Disconnected from database.");
