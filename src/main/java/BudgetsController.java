@@ -20,7 +20,7 @@ public class BudgetsController{
             //An ArrayList is used instead of an array as it is mutatable and we don't know how many rows there are in the table
 
             while(result.next()){
-                output.add(new ArrayList<String>());            //A new arraylist is created within the overall output List
+                output.add(new ArrayList<String>());       //A new arraylist is created within the overall output List
                 output.get(count).add(Integer.toString(result.getInt(1)));      //The value is added in to the current ArrayList within output
                 output.get(count).add(Integer.toString(result.getInt(2)));
                 output.get(count).add(Integer.toString(result.getInt(3)));
