@@ -44,6 +44,8 @@ public class main {
         CategoryController.delete(3);
         CategoryController.selectAll();*/
 
+        //AccountManagersController.insert(1,10,3,2);
+
         closeDatabase();
     }
 
