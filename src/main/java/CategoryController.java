@@ -80,7 +80,7 @@ public class CategoryController{
             ps.setInt(1,searchID);
             ps.execute();
 
-            out.println("Category number" + searchID + "was deleted successfully");
+            out.println("Category number " + searchID + " was deleted successfully");
 
         } catch (Exception e){
             out.println("Error deleting category, error message:\n" + e.getMessage());

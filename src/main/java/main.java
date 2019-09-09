@@ -1,6 +1,7 @@
 import org.sqlite.SQLiteConfig;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 import static java.lang.System.out;
 
@@ -22,6 +23,7 @@ public class main {
 
         out.println("\n");
 
+
         /*
         UserController.insert(23,"Callum","Brown","14-08-2005","callum.brown@test.com","01256767718","test");
         UserController.update(23,"Testing","Testing","1990-01-01","test@test.com","01256","###");
@@ -32,15 +34,15 @@ public class main {
         TransactionsController.update(1,10,200,1,"Test","14-08-2005",1);
         TransactionsController.selectAll();
         TransactionsController.search(1);
-        TransactionsController.delete(1); */
+        TransactionsController.delete(1);
 
-        CategoryController.insert(1, "test", 10);
-        CategoryController.update(1, "Food", 10);
-        CategoryController.search(1);
         CategoryController.insert(2, "test", 10);
+        CategoryController.update(2, "Food", 10);
+        CategoryController.search(2);
+        CategoryController.insert(3, "test", 10);
         CategoryController.selectAll();
-        CategoryController.delete(2);
-        CategoryController.selectAll();
+        CategoryController.delete(3);
+        CategoryController.selectAll();*/
 
         closeDatabase();
     }
