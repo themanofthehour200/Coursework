@@ -2,6 +2,7 @@ import org.sqlite.SQLiteConfig;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 import static java.lang.System.out;
 
@@ -9,42 +10,12 @@ public class main {
 
     public static Connection db = null;
 
+    public static Scanner sc = new Scanner(System.in);
+
     public static void main(String[] args) {
         openDatabase("courseworkDatabase.db");
 
-        //Testing tings here
-
-        /*
-        AccountController.delete(1);
-        AccountController.selectAll();
-        AccountController.insert(10,"Testers account",500,"USD");
-        AccountController.update(10,"testing account", 400, "GDP");
-        AccountController.search(10);*/
-
-        out.println("\n");
-
-
-        /*
-        UserController.insert(23,"Callum","Brown","14-08-2005","callum.brown@test.com","01256767718","test");
-        UserController.update(23,"Testing","Testing","1990-01-01","test@test.com","01256","###");
-        UserController.selectAll();
-        UserController.delete(24);*/
-
-        /*TransactionsController.insert(1,10,100,1,"Test","14-08-2005",1);
-        TransactionsController.update(1,10,200,1,"Test","14-08-2005",1);
-        TransactionsController.selectAll();
-        TransactionsController.search(1);
-        TransactionsController.delete(1);
-
-        CategoryController.insert(2, "test", 10);
-        CategoryController.update(2, "Food", 10);
-        CategoryController.search(2);
-        CategoryController.insert(3, "test", 10);
-        CategoryController.selectAll();
-        CategoryController.delete(3);
-        CategoryController.selectAll();*/
-
-        //AccountManagersController.insert(1,10,3,2);
+        UserController.delete(19);
 
         closeDatabase();
     }
@@ -62,6 +33,12 @@ public class main {
         }
 
     }
+
+/*    private static void login(){
+        out.println("Enter email:");
+        String email = sc.nextLine();
+        UserController.search();
+    }*/
 
     //Closes the connection with the database
     private static void closeDatabase() {
