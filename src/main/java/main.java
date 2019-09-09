@@ -8,18 +8,21 @@ import java.util.regex.Pattern;
 
 import static java.lang.System.out;
 
+/*encryption*/
+/*encryption*/
+
 public class main {
 
-    public static Connection db = null;
-
+    public static Connection db = null;//For database connection
     private static Scanner sc = new Scanner(System.in);
+
     private static boolean loggedIn = false;
+
 
     public static void main(String[] args) {
         openDatabase("courseworkDatabase.db");
 
-        //newUser();
-        loggedIn = true;
+        login();
 
         closeDatabase();
     }
@@ -34,8 +37,16 @@ public class main {
         out.println("Enter phone number: ");//Not much validation done on phone numbers as they're optional and vary a lot country to country
         String phoneNumber = sc.nextLine();
         String password = passwordValid();//Validation needed as none at lower levels
+        UserController.insert(firstName,surname,dateOfBirth,email,phoneNumber,password);
+    }
 
-
+    private static void login(){
+        out.println("Enter email: ");
+        String email = sc.nextLine();
+        out.println("Enter password");
+        String password = sc.nextLine();
+        if(UserController.search(0,email,password)!=null)out.println("Login successful!");
+        else out.println("Login failed");
     }
     //Checks first and last names contain no numbers and are at least two characters long
     private static String nameValid(String position){
@@ -97,7 +108,6 @@ public class main {
         }
 
     }
-
 
 
     //Closes the connection with the database

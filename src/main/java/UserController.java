@@ -40,10 +40,14 @@ public class UserController {
     }
 
     //This returns a specific accounts details, allowing the user to check their balance etc.
-    public static List search(int searchID){
+    public static List search(int searchID, String email, String password){
         try {
-            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Users WHERE UserID = ?");
+            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Users WHERE UserID = ? OR (Email = ? AND Password = ?)");
+
             ps.setInt(1,searchID); //The user with the specific account ID is searched for
+            ps.setString(2,email);
+            ps.setString(3,password);
+
             ResultSet result = ps.executeQuery();
 
             ArrayList<String> output = new ArrayList<String>(1);
@@ -73,6 +77,7 @@ public class UserController {
             ps.setString(1,null);//auto-increments the primary key
             fillColumn(firstName, surname, dateOfBirth, email, phoneNumber, password, ps, 1);
             ps.executeUpdate();
+            out.println("User added successfully");
 
         } catch (Exception e){
             out.println("Error when inputting user into database, error code\n" + e.getMessage());
