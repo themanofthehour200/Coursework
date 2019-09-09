@@ -1,7 +1,9 @@
 import org.sqlite.SQLiteConfig;
 
-import java.sql.*;
-import java.util.ArrayList;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -13,44 +15,63 @@ public class main {
     public static Connection db = null;
 
     private static Scanner sc = new Scanner(System.in);
+    private static boolean loggedIn = false;
 
     public static void main(String[] args) {
         openDatabase("courseworkDatabase.db");
 
-        newUser();
+        //UserController.insert("adam","brown","2002-08-30","asgjhy@dgsh.com","099","098");
+        UserController.update(4,"Ben","Smith","2001-01-01","example@gmail.com","07845","password!$9");
+
+        //newUser();
+        loggedIn = true;
+
 
         closeDatabase();
     }
 
     private static void newUser(){
-        out.println("Enter first name:");
-        String firstName  = sc.nextLine();
-        while(!nameCheck(firstName)){
+        String firstName = nameCheck("first ");//Need validation as none in lower levels
+        String surname = nameCheck("sur");
+        out.println("DOB: ");
+        String dateOfBirth = sc.nextLine();
+        out.println("Email: ");
+        String email = sc.nextLine();
+        out.println("Enter phone number: ");//Not much validation done on phone numbers as they're optional and vary a lot country to country
+        String phoneNumber = sc.nextLine();
+        String password = passwordCheck();//Validation needed as none at lower levels
+
+
+    }
+    //Checks first and last names contain no numbers and are at least two characters long
+    private static String nameCheck(String position){
+        out.println("Enter "+ position +"name:");
+        String name  = sc.nextLine();
+
+        Pattern letter = Pattern.compile("[a-zA-z]");//Checks name contains letters (not just whitespace)
+        Pattern digit = Pattern.compile("[0-9]");//Checks no numbers in name
+        Pattern special = Pattern.compile ("[!@#$%&*()_+=|<>?{}\\[\\]~]");//Checks no special characters apart from '-'
+
+        Matcher hasLetter = letter.matcher(name);
+        Matcher hasDigit = digit.matcher(name);
+        Matcher hasSpecial = special.matcher(name);
+
+        if(!hasLetter.find() || hasDigit.find() || hasSpecial.find() || name.length() < 2) {//Name can't contains numbers or be one character long
             out.println("Name must be over one character long and can't contain numbers or special characters");
-            out.println("Enter first name:");
-            firstName  = sc.nextLine();
+            nameCheck(position);//Uses recursion to ensure that a valid name is entered
         }
+        return name;
+    }
+
+
+    private static String passwordCheck(){
         out.println("Password must be between 8 and 16 characters, contain at least one special character and one number");
         out.println("Input: ");
         String password = sc.nextLine();
-        while(!passwordCheck(password)){
-            out.println("Invalid input, please try again");
-            out.println("Password must be between 8 and 16 characters, contain at least one special character and one number");
-            out.println("Input: ");
-            password = sc.nextLine();
-        }
-    }
-    //Checks first and last names contain no numbers and are at least two characters long
-    private static boolean nameCheck(String name){
-        Pattern letter = Pattern.compile("[a-zA-z]");//Makes sure name isn't just whitespace
-        Pattern digit = Pattern.compile("[0-9]");//checks no numbers in name
-        Matcher hasLetter = letter.matcher(name);
-        Matcher hasDigit = digit.matcher(name);
-        return (hasLetter.find() && !hasDigit.find() && name.length() > 1);//Password can't contains numbers or be one character long
-    }
-
-    private static boolean passwordCheck(String password){
         if(password.length() >= 8 && password.length() <= 16){
+            /*If statement here as this branch should only be done if the length is correct, as this branch is
+            complex to process; shouldn't be done if not necessary*/
+
             Pattern letter = Pattern.compile("[a-zA-z]");//Checks that password contains letters
             Pattern digit = Pattern.compile("[0-9]");//and numbers
             Pattern special = Pattern.compile ("[!@#$%&*()_+=|<>?{}\\[\\]~-]");//and a special character
@@ -59,10 +80,15 @@ public class main {
             Matcher hasDigit = digit.matcher(password);
             Matcher hasSpecial = special.matcher(password);
 
-            return hasLetter.find() && hasDigit.find() && hasSpecial.find();
+            if (!hasLetter.find() || !hasDigit.find() && !hasSpecial.find()){ //If not meeting requirements of a letter,digit and special character
+                out.println("Invalid input, please try again");
+                passwordCheck();
+            }
         }else{
-            return false;
+            out.println("Invalid input, please try again");
+            passwordCheck();
         }
+        return password;//Will only arrive at this part if password has met requirements
     }
 
     //establishes a connection to the database
@@ -92,4 +118,5 @@ public class main {
     }
 
 }
+
 

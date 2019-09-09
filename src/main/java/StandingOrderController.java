@@ -63,13 +63,13 @@ public class StandingOrderController{
 
     }
 
-    public static void insert(int orderID, int accountID, int categoryID, int amount, int duration, String lastPaid){
+    public static void insert(int accountID, int categoryID, int amount, int duration, String lastPaid){
 
         try{
             PreparedStatement ps = main.db.prepareStatement("INSERT INTO StandingOrders (OrderID, AccountID, CategoryID, Amount, Duration, LastPaid) VALUES (?,?,?,?,?,?)");
 
-            fillColumn(orderID, accountID, categoryID, amount, duration, lastPaid, ps);
-
+            ps.setString(1,null);
+            fillColumn(accountID, categoryID, amount, duration, lastPaid, ps,1);
             ps.executeUpdate();
 
         } catch (Exception e){
@@ -92,9 +92,9 @@ public class StandingOrderController{
 
     public static void update(int orderID, int accountID, int categoryID, int amount, int duration, String lastPaid){
         try{
-            PreparedStatement ps = main.db.prepareStatement("UPDATE StandingOrders SET OrderID = ?, AccountID = ?, CategoryID = ?, Amount = ?, Duration = ?, LastPaid = ? WHERE OrderID = ?");
-            fillColumn(orderID, accountID, categoryID, amount, duration, lastPaid, ps);
-            ps.setInt(7,orderID);
+            PreparedStatement ps = main.db.prepareStatement("UPDATE StandingOrders SET AccountID = ?, CategoryID = ?, Amount = ?, Duration = ?, LastPaid = ? WHERE OrderID = ?");
+            fillColumn(accountID, categoryID, amount, duration, lastPaid, ps,0);
+            ps.setInt(6,orderID);
             ps.executeUpdate();
 
         } catch (Exception e){
@@ -103,13 +103,12 @@ public class StandingOrderController{
     }
 
     /* removes the duplicate code of the data entry into the SQL statement for update() and add(), as there code was very similar */
-    private static void fillColumn(int orderID, int accountID, int categoryID, int amount, int duration, String lastPaid, PreparedStatement ps) throws SQLException {
-        ps.setInt(1,orderID);
-        ps.setInt(2, accountID);
-        ps.setInt(3, categoryID);
-        ps.setInt(4,amount);
-        ps.setInt(5,duration);
-        ps.setString(6,lastPaid);
+    private static void fillColumn(int accountID, int categoryID, int amount, int duration, String lastPaid, PreparedStatement ps,int column) throws SQLException {
+        ps.setInt(1+column, accountID);//Done as column numbers are one off in difference between update and insert SQL statements
+        ps.setInt(2+column, categoryID);
+        ps.setInt(3+column,amount);
+        ps.setInt(4+column,duration);
+        ps.setString(5+column,lastPaid);
     }
 
 }

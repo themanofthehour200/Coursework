@@ -60,13 +60,13 @@ public class AccountManagersController{
 
     }
 
-    public static void insert(int controlID, int accountID, int managerID, int accessLevel){
+    public static void insert(int accountID, int managerID, int accessLevel){
 
         try{
             PreparedStatement ps = main.db.prepareStatement("INSERT INTO AccountManagers (ControlID, AccountID, ManagerID, AccessLevel) VALUES (?,?,?,?)");
 
-            fillColumn(controlID, accountID, managerID, accessLevel, ps);
-
+            ps.setString(1,null);
+            fillColumn(accountID, managerID, accessLevel, ps,1);
             ps.executeUpdate();
 
         } catch (Exception e){
@@ -89,9 +89,11 @@ public class AccountManagersController{
 
     public static void update(int controlID, int accountID, int managerID, int accessLevel){
         try{
-            PreparedStatement ps = main.db.prepareStatement("UPDATE AccountManagers SET ControlID = ?, AccountID = ?, ManagerID = ?, accessLevel = ? WHERE ControlID = ?");
-            fillColumn(controlID, accountID, managerID, accessLevel, ps);
-            ps.setInt(5,controlID);
+            PreparedStatement ps = main.db.prepareStatement("UPDATE AccountManagers SET AccountID = ?, ManagerID = ?, AccessLevel = ? WHERE ControlID = ?");
+
+
+            fillColumn(accountID, managerID, accessLevel, ps,0);
+            ps.setInt(4,controlID);
             ps.executeUpdate();
 
         } catch (Exception e){
@@ -100,11 +102,10 @@ public class AccountManagersController{
     }
 
     /* removes the duplicate code of the data entry into the SQL statement for update() and add(), as there code was very similar */
-    private static void fillColumn(int controlID, int accountID, int managerID, int accessLevel, PreparedStatement ps) throws SQLException {
-        ps.setInt(1,controlID);
-        ps.setInt(2, accountID);
-        ps.setInt(3, managerID);
-        ps.setInt(4, accessLevel);
+    private static void fillColumn(int accountID, int managerID, int accessLevel, PreparedStatement ps, int column) throws SQLException {
+        ps.setInt(1+column, accountID);
+        ps.setInt(2+column, managerID);
+        ps.setInt(3+column, accessLevel);
     }
 
 }

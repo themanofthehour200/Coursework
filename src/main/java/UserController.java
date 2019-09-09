@@ -66,14 +66,13 @@ public class UserController {
 
     }
 
-    public static void insert(int userID, String firstName,String surname, String dateOfBirth,String email, String phoneNumber, String password){
+    public static void insert(String firstName,String surname, String dateOfBirth,String email, String phoneNumber, String password){
 
         try{
             PreparedStatement ps = main.db.prepareStatement("INSERT INTO Users (UserID, FirstName, Surname, DateOfBirth, Email, PhoneNumber, Password) VALUES (?,?,?,?,?,?,?)");
-            ps.setInt(1,userID);
-            fillColumn(firstName, surname, dateOfBirth, email, phoneNumber, ps);
-            ps.setString(7,password);
 
+            ps.setString(1,null);//auto-increments the primary key
+            fillColumn(firstName, surname, dateOfBirth, email, phoneNumber, password, ps, 1);
             ps.executeUpdate();
 
         } catch (Exception e){
@@ -97,8 +96,7 @@ public class UserController {
     public static void update(int userID, String firstName,String surname, String dateOfBirth,String email, String phoneNumber, String password){
         try{
             PreparedStatement ps = main.db.prepareStatement("UPDATE Users SET FirstName = ?, Surname = ?, DateOfBirth = ?, Email = ?, PhoneNumber = ?, Password = ? WHERE UserID = ?");
-            ps.setString(1,firstName);
-            fillColumn(surname, dateOfBirth, email, phoneNumber, password, ps);
+            fillColumn(firstName, surname, dateOfBirth, email, phoneNumber, password, ps,0);
             ps.setInt(7,userID);
             ps.executeUpdate();
 
@@ -109,12 +107,13 @@ public class UserController {
     }
 
     /* removes the duplicate code of the data entry into the SQL statement for update() and add(), as there code was very similar */
-    private static void fillColumn(String surname, String dateOfBirth, String email, String phoneNumber, String password, PreparedStatement ps) throws SQLException {
-        ps.setString(2,surname);
-        ps.setString(3,dateOfBirth);
-        ps.setString(4,email);
-        ps.setString(5,phoneNumber);
-        ps.setString(6,password);
+    private static void fillColumn(String firstName,String surname, String dateOfBirth, String email, String phoneNumber, String password, PreparedStatement ps, int column) throws SQLException {
+        ps.setString(1+column,firstName);//column is needed as the column numbers are slightly different between
+        ps.setString(2+column,surname);//the insert method and the update method
+        ps.setString(3+column,dateOfBirth);
+        ps.setString(4+column,email);
+        ps.setString(5+column,phoneNumber);
+        ps.setString(6+column,password);
     }
 
 }

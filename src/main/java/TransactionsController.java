@@ -67,12 +67,13 @@ public class TransactionsController{
 
     }
 
-    public static void insert(int transactionID, int accountID, int balanceChange, int categoryID, String description, String date, int standingOrderID){
+    public static void insert(int accountID, int balanceChange, int categoryID, String description, String date, int standingOrderID){
 
         try{
             PreparedStatement ps = main.db.prepareStatement("INSERT INTO Transactions (TransactionID, AccountID, BalanceChange, CategoryID, Description, Date, StandingOrderID ) VALUES (?,?,?,?,?,?,?)");
 
-            fillColumn(transactionID, accountID, balanceChange, categoryID, description, date, standingOrderID, ps);
+            ps.setString(1,null);
+            fillColumn(accountID, balanceChange, categoryID, description, date, standingOrderID, ps,1);
 
             ps.executeUpdate();
 
@@ -96,9 +97,11 @@ public class TransactionsController{
 
     public static void update(int transactionID, int accountID, int balanceChange, int categoryID, String description, String date, int standingOrderID){
         try{
-            PreparedStatement ps = main.db.prepareStatement("UPDATE Transactions SET TransactionID = ?, AccountID = ?, BalanceChange = ?, CategoryID = ?, Description = ?, Date = ?, StandingOrderID = ? WHERE TransactionID = ?");
-            fillColumn(transactionID, accountID, balanceChange, categoryID, description, date, standingOrderID, ps);
-            ps.setInt(8,transactionID);
+            PreparedStatement ps = main.db.prepareStatement("UPDATE Transactions SET AccountID = ?, BalanceChange = ?, CategoryID = ?, Description = ?, Date = ?, StandingOrderID = ? WHERE TransactionID = ?");
+
+            fillColumn(accountID, balanceChange, categoryID, description, date, standingOrderID, ps,0);
+            ps.setInt(7,transactionID);
+
             ps.executeUpdate();
 
         } catch (Exception e){
@@ -107,14 +110,14 @@ public class TransactionsController{
     }
 
     /* removes the duplicate code of the data entry into the SQL statement for update() and add(), as there code was very similar */
-    private static void fillColumn(int transactionID, int accountID, int balanceChange, int categoryID, String description, String date, int standingOrderID, PreparedStatement ps) throws SQLException {
-        ps.setInt(1,transactionID);
-        ps.setInt(2, accountID);
-        ps.setInt(3,balanceChange);
-        ps.setInt(4,categoryID);
-        ps.setString(5,description);
-        ps.setString(6,date);
-        ps.setInt(7,standingOrderID);
+    private static void fillColumn(int accountID, int balanceChange, int categoryID, String description, String date, int standingOrderID, PreparedStatement ps, int column) throws SQLException {
+
+        ps.setInt(1+column, accountID);
+        ps.setInt(2+column,balanceChange);
+        ps.setInt(3+column,categoryID);
+        ps.setString(4+column,description);
+        ps.setString(5+column,date);
+        ps.setInt(6+column,standingOrderID);
     }
 
 }

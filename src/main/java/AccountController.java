@@ -1,17 +1,18 @@
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.System.out;
 
-public class AccountController {
+public class AccountController{
 
     //This is the method for selecting all rows in the table of Users
     //This method is mainly just used for testing purposes, as this is easier than manually having to check the Accounts table after each applicable test
     public static List selectAll() {
         try {
-            PreparedStatement ps = main.db.prepareStatement("SELECT AccountID, AccountName, Balance, Currency FROM Accounts");
+            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Accounts");
             ResultSet result = ps.executeQuery();
 
             int count = 0;
@@ -58,15 +59,12 @@ public class AccountController {
 
     }
 
-    public static void insert(int accountID, String accountName, int balance, String currency) {
+    public static void insert(String accountName, int balance, String currency) {
 
         try {
             PreparedStatement ps = main.db.prepareStatement("INSERT INTO Accounts (AccountID, AccountName, Balance, Currency) VALUES (?,?,?,?)");
-            ps.setInt(1, accountID);
-            ps.setString(2, accountName);
-            ps.setInt(3, balance);
-            ps.setString(4, currency);
-
+            ps.setString(1, null);//As it auto-increments
+            fillColumn(accountName,balance,currency,ps,1);
             ps.executeUpdate();
 
         } catch (Exception e) {
@@ -78,9 +76,7 @@ public class AccountController {
     public static void update(int accountID, String accountName, int balance, String currency) {
         try {
             PreparedStatement ps = main.db.prepareStatement("UPDATE Accounts SET AccountName = ?, Balance = ?, Currency = ? WHERE AccountID = ?");
-            ps.setString(1, accountName);
-            ps.setInt(2, balance);
-            ps.setString(3, currency);
+            fillColumn(accountName,balance,currency,ps,0);
             ps.setInt(4, accountID);
             ps.executeUpdate();
 
@@ -100,5 +96,11 @@ public class AccountController {
         } catch (Exception e) {
             out.println("Error deleting user, error message:\n" + e.getMessage());
         }
+    }
+
+    private static void fillColumn(String accountName, int balance, String currency, PreparedStatement ps, int column) throws SQLException {
+        ps.setString(1+column, accountName);
+        ps.setInt(2+column, balance);
+        ps.setString(3+column, currency);
     }
 }

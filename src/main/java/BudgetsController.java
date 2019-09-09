@@ -65,17 +65,17 @@ public class BudgetsController{
 
     }
 
-    public static void insert(int budgetID, int userID, int categoryID, int amount, int balance, int duration, String dateStarted){
+    public static void insert(int userID, int categoryID, int amount, int balance, int duration, String dateStarted){
 
         try{
             PreparedStatement ps = main.db.prepareStatement("INSERT INTO Budgets (BudgetID, UserID, CategoryID, Amount, Balance, Duration, DateStarted) VALUES (?,?,?,?,?,?,?)");
 
-            fillColumn(budgetID, userID, categoryID, amount, balance, duration, dateStarted, ps);
-
+            ps.setString(1,null);
+            fillColumn(userID, categoryID, amount, balance, duration, dateStarted, ps,1);
             ps.executeUpdate();
 
         } catch (Exception e){
-            out.println("Error when inputting transaction into database, error code\n" + e.getMessage());
+            out.println("Error when inputting budget into database, error code\n" + e.getMessage());
         }
     }
 
@@ -92,27 +92,26 @@ public class BudgetsController{
         }
     }
 
-    public static void update(int budgetID, int userID, int categoryID, int amount, int balance, int duration, String dateStarted){
+    public static void update(int budgetID,int userID, int categoryID, int amount, int balance, int duration, String dateStarted){
         try{
-            PreparedStatement ps = main.db.prepareStatement("UPDATE Budgets SET BudgetID = ?, UserID = ?, CategoryID = ?, Amount = ?, Balance = ?, Duration = ?, DateStarted = ?WHERE BudgetID = ?");
-            fillColumn(budgetID, userID, categoryID, amount, balance, duration, dateStarted, ps);
-            ps.setInt(8, budgetID);
+            PreparedStatement ps = main.db.prepareStatement("UPDATE Budgets SET UserID = ?, CategoryID = ?, Amount = ?, Balance = ?, Duration = ?, DateStarted = ?WHERE BudgetID = ?");
+            fillColumn(userID, categoryID, amount, balance, duration, dateStarted, ps,0);
+            ps.setInt(7, budgetID);
             ps.executeUpdate();
 
         } catch (Exception e){
-            out.println("Error updating order, error message:\n" + e.getMessage());
+            out.println("Error updating budget, error message:\n" + e.getMessage());
         }
     }
 
     /* removes the duplicate code of the data entry into the SQL statement for update() and add(), as there code was very similar */
-    private static void fillColumn(int budgetID, int userID, int categoryID, int amount, int balance, int duration, String dateStarted, PreparedStatement ps) throws SQLException {
-        ps.setInt(1,budgetID);
-        ps.setInt(2, userID);
-        ps.setInt(3, categoryID);
-        ps.setInt(4,amount);
-        ps.setInt(5,balance);
-        ps.setInt(6,duration);
-        ps.setString(7,dateStarted);
+    private static void fillColumn(int userID, int categoryID, int amount, int balance, int duration, String dateStarted, PreparedStatement ps,int column) throws SQLException {
+        ps.setInt(1+column, userID);
+        ps.setInt(2+column, categoryID);
+        ps.setInt(3+column,amount);
+        ps.setInt(4+column,balance);
+        ps.setInt(5+column,duration);
+        ps.setString(6+column,dateStarted);
     }
 
 }

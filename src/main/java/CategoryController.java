@@ -58,12 +58,12 @@ public class CategoryController{
 
     }
 
-    public static void insert(int categoryID, String categoryName, int accessID){
+    public static void insert(String categoryName, int accessID){
 
         try{
             PreparedStatement ps = main.db.prepareStatement("INSERT INTO Categories (CategoryID, CategoryName, AccessID) VALUES (?,?,?)");
 
-            ps.setInt(1,categoryID);
+            ps.setString(1,null);
             ps.setString(2, categoryName);
             ps.setInt(3, accessID);
 
@@ -89,12 +89,11 @@ public class CategoryController{
 
     public static void update(int categoryID, String categoryName, int accessID){
         try{
-            PreparedStatement ps = main.db.prepareStatement("UPDATE Categories SET CategoryID = ?, CategoryName = ?, AccessID = ?  WHERE CategoryID = ?");
+            PreparedStatement ps = main.db.prepareStatement("UPDATE Categories SET CategoryName = ?, AccessID = ?  WHERE CategoryID = ?");
 
-            ps.setInt(1,categoryID);
-            ps.setString(2,categoryName);
-            ps.setInt(3, accessID);
-            ps.setInt(4,categoryID);
+            ps.setString(1,categoryName);
+            ps.setInt(2, accessID);
+            ps.setInt(3,categoryID);
             ps.executeUpdate();
 
         } catch (Exception e){
