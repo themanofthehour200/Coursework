@@ -2,8 +2,6 @@ import org.sqlite.SQLiteConfig;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,31 +18,27 @@ public class main {
     public static void main(String[] args) {
         openDatabase("courseworkDatabase.db");
 
-        //UserController.insert("adam","brown","2002-08-30","asgjhy@dgsh.com","099","098");
-        UserController.update(4,"Ben","Smith","2001-01-01","example@gmail.com","07845","password!$9");
-
         //newUser();
         loggedIn = true;
-
 
         closeDatabase();
     }
 
     private static void newUser(){
-        String firstName = nameCheck("first ");//Need validation as none in lower levels
-        String surname = nameCheck("sur");
+        String firstName = nameValid("first ");//Need validation as none in lower levels
+        String surname = nameValid("sur");
         out.println("DOB: ");
         String dateOfBirth = sc.nextLine();
         out.println("Email: ");
         String email = sc.nextLine();
         out.println("Enter phone number: ");//Not much validation done on phone numbers as they're optional and vary a lot country to country
         String phoneNumber = sc.nextLine();
-        String password = passwordCheck();//Validation needed as none at lower levels
+        String password = passwordValid();//Validation needed as none at lower levels
 
 
     }
     //Checks first and last names contain no numbers and are at least two characters long
-    private static String nameCheck(String position){
+    private static String nameValid(String position){
         out.println("Enter "+ position +"name:");
         String name  = sc.nextLine();
 
@@ -58,13 +52,12 @@ public class main {
 
         if(!hasLetter.find() || hasDigit.find() || hasSpecial.find() || name.length() < 2) {//Name can't contains numbers or be one character long
             out.println("Name must be over one character long and can't contain numbers or special characters");
-            nameCheck(position);//Uses recursion to ensure that a valid name is entered
+            nameValid(position);//Uses recursion to ensure that a valid name is entered
         }
         return name;
     }
 
-
-    private static String passwordCheck(){
+    private static String passwordValid(){
         out.println("Password must be between 8 and 16 characters, contain at least one special character and one number");
         out.println("Input: ");
         String password = sc.nextLine();
@@ -82,11 +75,11 @@ public class main {
 
             if (!hasLetter.find() || !hasDigit.find() && !hasSpecial.find()){ //If not meeting requirements of a letter,digit and special character
                 out.println("Invalid input, please try again");
-                passwordCheck();
+                passwordValid();
             }
         }else{
             out.println("Invalid input, please try again");
-            passwordCheck();
+            passwordValid();
         }
         return password;//Will only arrive at this part if password has met requirements
     }

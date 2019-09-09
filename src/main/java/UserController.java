@@ -63,7 +63,6 @@ public class UserController {
             out.println("Error searching database 'Users', error message:\n" + e.getMessage());
             return null;
         }
-
     }
 
     public static void insert(String firstName,String surname, String dateOfBirth,String email, String phoneNumber, String password){
@@ -103,7 +102,6 @@ public class UserController {
         } catch (Exception e){
             out.println("Error updating user, error message:\n" + e.getMessage());
         }
-
     }
 
     /* removes the duplicate code of the data entry into the SQL statement for update() and add(), as there code was very similar */
