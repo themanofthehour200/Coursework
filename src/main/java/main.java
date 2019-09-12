@@ -21,9 +21,8 @@ public class main {
 
     public static void main(String[] args) {
         openDatabase("courseworkDatabase.db");
-        out.println("test push");
 
-        login();
+
 
         closeDatabase();
     }
@@ -33,8 +32,7 @@ public class main {
         String surname = nameValid("sur");
         out.println("DOB: ");
         String dateOfBirth = sc.nextLine();
-        out.println("Email: ");
-        String email = sc.nextLine();
+        String email = emailCheck();
         out.println("Enter phone number: ");//Not much validation done on phone numbers as they're optional and vary a lot country to country
         String phoneNumber = sc.nextLine();
         String password = passwordValid();//Validation needed as none at lower levels
@@ -67,6 +65,18 @@ public class main {
             nameValid(position);//Uses recursion to ensure that a valid name is entered
         }
         return name;
+    }
+
+    private static String emailCheck(){
+        out.println("Email: ");
+        String email = sc.nextLine();
+        Pattern pattern = Pattern.compile("^.+@.+\\..+$");
+        Matcher matcher = pattern.matcher(email);
+        if(!matcher.find()){
+            out.println("Invalid email entered, please try again");
+            emailCheck();
+        }
+        return email;
     }
 
     private static String passwordValid(){
@@ -109,7 +119,6 @@ public class main {
         }
 
     }
-
 
     //Closes the connection with the database
     private static void closeDatabase() {
