@@ -21,6 +21,7 @@ public class main {
 
     public static void main(String[] args) {
         openDatabase("courseworkDatabase.db");
+        out.println("test push");
 
         login();
 
