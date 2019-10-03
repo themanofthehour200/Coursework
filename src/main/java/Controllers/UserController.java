@@ -1,3 +1,13 @@
+package Controllers;
+
+import Server.main;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -6,36 +16,39 @@ import java.util.List;
 
 import static java.lang.System.out;
 
+@Path("Users/")
 public class UserController {
 
     //This is the method for selecting all rows in the table of Users
     //This method is mainly just used for testing purposes, as this is easier than manually having to check the Accounts table after each applicable test
-    public static List selectAll(){
+
+    @GET
+    @Path("list")
+    @Produces(MediaType.APPLICATION_JSON)//Jersey turns this into an HTTP request handler
+    public String selectAll(){
+        System.out.println("Users/list");
+        JSONArray list = new JSONArray();
         try{
             PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Users");
             ResultSet result = ps.executeQuery();
 
-            int count = 0;
-            List<List<String>> output = new ArrayList<List<String>>(); //This is a List of ArrayLists. This is what is returned.
-            //An ArrayList is used instead of an array as it is mutatable and we don't know how many rows there are in the table
-
             while(result.next()){
-                output.add(new ArrayList<String>());            //A new arraylist is created within the overall output List
-                output.get(count).add(Integer.toString(result.getInt(1)));      //The value is added in to the current ArrayList within output
-                output.get(count).add(result.getString(2));
-                output.get(count).add(result.getString(3));
-                output.get(count).add(result.getString(4));
-                output.get(count).add(result.getString(5));
-                output.get(count).add(result.getString(6));
-                output.get(count).add(result.getString(7));
-                out.println(output.get(count)); //To be removed once testing phase one is done
-                count++;
+                JSONObject item = new JSONObject();
+                item.put("UserId", result.getInt(1));
+                item.put("FirstName", result.getString(2));
+                item.put("Surname", result.getString(3));
+                item.put("DateOfBirth", result.getString(4));
+                item.put("Email", result.getString(5));
+                item.put("PhoneNumber", result.getString(6));
+                item.put("Password", result.getString(7));
+                list.add(item);
+
             }
-            return output;
+            return list.toString();
 
         } catch (Exception e){
-            out.println("Error reading database 'Users', error message:\n" + e.getMessage());
-            return null;
+            System.out.println("Database error: " + e.getMessage());
+            return "{\"error\": \"Unable to list items, please see server console for more info.\"}";
         }
     }
 

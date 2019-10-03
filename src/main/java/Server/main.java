@@ -1,3 +1,12 @@
+package Server;
+
+import Controllers.UserController;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.servlet.ServletContainer;
 import org.sqlite.SQLiteConfig;
 
 import java.sql.Connection;
@@ -22,11 +31,27 @@ public class main {
     public static void main(String[] args) {
         openDatabase("courseworkDatabase.db");
 
+        ResourceConfig config = new ResourceConfig();//Preparation of our Jersey Servlet
+        config.packages("Controllers");//Use the handlers in the controllers resource
+        config.register(MultiPartFeature.class);//support multipart HTML forms
+        ServletHolder servlet = new ServletHolder(new ServletContainer(config));
+
+        Server server = new Server(8081);
+        ServletContextHandler context = new ServletContextHandler(server, "/");
+        context.addServlet(servlet, "/*");
+
+        try {
+            server.start();
+            System.out.println("Server successfully started.");
+            server.join();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
 
         closeDatabase();
     }
-
+/*
     private static void newUser(){
         String firstName = nameValid("first ");//Need validation as none in lower levels
         String surname = nameValid("sur");
@@ -84,8 +109,8 @@ public class main {
         out.println("Input: ");
         String password = sc.nextLine();
         if(password.length() >= 8 && password.length() <= 16){
-            /*If statement here as this branch should only be done if the length is correct, as this branch is
-            complex to process; shouldn't be done if not necessary*/
+            //If statement here as this branch should only be done if the length is correct, as this branch is
+            //complex to process; shouldn't be done if not necessary
 
             Pattern letter = Pattern.compile("[a-zA-z]");//Checks that password contains letters
             Pattern digit = Pattern.compile("[0-9]");//and numbers
@@ -104,7 +129,7 @@ public class main {
             passwordValid();
         }
         return password;//Will only arrive at this part if password has met requirements
-    }
+    }*/
 
     //establishes a connection to the database
     private static void openDatabase(String dbFile) {
