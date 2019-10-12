@@ -72,7 +72,8 @@ public class AccountController{
             ps.executeUpdate();
 
         } catch (Exception e) {
-            out.println("Error when inputting account into database, error code\n" + e.getMessage());
+            out.println("Error when inputting account into database, please email our dedicated support team " +
+                    "at 87534@farnborough.ac.uk with error code:\n" + e.getMessage());
         }
     }
 

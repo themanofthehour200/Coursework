@@ -1,12 +1,6 @@
 package Server;
 
 import Controllers.UserController;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
-import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.servlet.ServletContainer;
 import org.sqlite.SQLiteConfig;
 
 import java.sql.Connection;
@@ -25,18 +19,16 @@ public class main {
     public static Connection db = null;//For database connection
     private static Scanner sc = new Scanner(System.in);
 
-    private static boolean loggedIn = false;
-
-
     public static void main(String[] args) {
         openDatabase("courseworkDatabase.db");
 
+        /*
         ResourceConfig config = new ResourceConfig();//Preparation of our Jersey Servlet
         config.packages("Controllers");//Use the handlers in the controllers resource
         config.register(MultiPartFeature.class);//support multipart HTML forms
         ServletHolder servlet = new ServletHolder(new ServletContainer(config));
 
-        Server server = new Server(8081);
+        ALPNProcessor.Server server = new Server(8081);
         ServletContextHandler context = new ServletContextHandler(server, "/");
         context.addServlet(servlet, "/*");
 
@@ -47,11 +39,14 @@ public class main {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+*/
+        UserController.search(5,null,null);
+        UserController.update(5,"Willy","Wonka","1969-04-20","munchkin@choc.com","125","Password123!");
+        UserController.search(5,null,null);
 
         closeDatabase();
     }
-/*
+
     private static void newUser(){
         String firstName = nameValid("first ");//Need validation as none in lower levels
         String surname = nameValid("sur");
@@ -74,7 +69,7 @@ public class main {
     }
     //Checks first and last names contain no numbers and are at least two characters long
     private static String nameValid(String position){
-        out.println("Enter "+ position +"name:");
+        out.println("Enter "+ position +"name: ");
         String name  = sc.nextLine();
 
         Pattern letter = Pattern.compile("[a-zA-z]");//Checks name contains letters (not just whitespace)
@@ -129,7 +124,7 @@ public class main {
             passwordValid();
         }
         return password;//Will only arrive at this part if password has met requirements
-    }*/
+    }
 
     //establishes a connection to the database
     private static void openDatabase(String dbFile) {
