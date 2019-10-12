@@ -39,10 +39,12 @@ public class CategoryController{
     }
 
     //This returns a specific accounts details, allowing the user to check their balance etc.
-    public static List search(int searchID){
+    public static List search(int searchID, String categoryName, int accessID){
         try {
-            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Categories WHERE CategoryID = ?");
+            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Categories WHERE (CategoryID = ? OR CategoryName = ?) AND AccessID = ? ");
             ps.setInt(1,searchID); //The user with the specific account ID is searched for
+            ps.setString(2,categoryName);
+            ps.setInt(3,accessID);
             ResultSet result = ps.executeQuery();
 
             ArrayList<String> output = new ArrayList<String>(1);

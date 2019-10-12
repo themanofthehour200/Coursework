@@ -44,10 +44,11 @@ public class BudgetsController{
     }
 
     //This returns a specific accounts details, allowing the user to check their balance etc.
-    public static List search(int searchID){
+    public static List search(int searchID, int userID){
         try {
-            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Budgets WHERE BudgetID = ?");
+            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Budgets WHERE BudgetID = ? OR UserID = ?");
             ps.setInt(1,searchID); //The user with the specific account ID is searched for
+            ps.setInt(2,userID);
             ResultSet result = ps.executeQuery();
 
             ArrayList<String> output = new ArrayList<String>(1);
@@ -98,7 +99,7 @@ public class BudgetsController{
 
     public static void update(int budgetID,int userID, int categoryID, int amount, int balance, int duration, String dateStarted){
         try{
-            PreparedStatement ps = main.db.prepareStatement("UPDATE Budgets SET UserID = ?, CategoryID = ?, Amount = ?, Balance = ?, Duration = ?, DateStarted = ?WHERE BudgetID = ?");
+            PreparedStatement ps = main.db.prepareStatement("UPDATE Budgets SET UserID = ?, CategoryID = ?, Amount = ?, Balance = ?, Duration = ?, DateStarted = ? WHERE BudgetID = ?");
             fillColumn(userID, categoryID, amount, balance, duration, dateStarted, ps,0);
             ps.setInt(7, budgetID);
             ps.executeUpdate();
@@ -117,5 +118,4 @@ public class BudgetsController{
         ps.setInt(5+column,duration);
         ps.setString(6+column,dateStarted);
     }
-
 }
