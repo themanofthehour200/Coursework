@@ -17,9 +17,6 @@ import java.util.regex.Pattern;
 
 import static java.lang.System.out;
 
-/*encryption*/
-/*encryption*/
-
 public class main {
 
     public static Connection db = null;//For database connection
