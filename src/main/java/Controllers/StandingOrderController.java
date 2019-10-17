@@ -43,10 +43,11 @@ public class StandingOrderController{
     }
 
     //This returns a specific accounts details, allowing the user to check their balance etc.
-    public static List search(int searchID){
+    public static List search(int searchID, int accountID){
         try {
-            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM StandingOrders WHERE OrderID = ?");
+            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM StandingOrders WHERE OrderID = ? OR AccountID = ?");
             ps.setInt(1,searchID); //The user with the specific account ID is searched for
+            ps.setInt(2,accountID);
             ResultSet result = ps.executeQuery();
 
             ArrayList<String> output = new ArrayList<String>(1);
