@@ -19,6 +19,8 @@ public class main {
     public static void main(String[] args) {
         openDatabase("courseworkDatabase.db");
 
+        out.println("thing");
+
         /*
         ResourceConfig config = new ResourceConfig();//Preparation of our Jersey Servlet
         config.packages("Controllers");//Use the handlers in the controllers resource
