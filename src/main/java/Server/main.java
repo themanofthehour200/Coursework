@@ -1,7 +1,14 @@
 package Server;
 
 import Controllers.UserController;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.servlet.ServletContainer;
 import org.sqlite.SQLiteConfig;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -19,15 +26,13 @@ public class main {
     public static void main(String[] args) {
         openDatabase("courseworkDatabase.db");
 
-        out.println("thing");
 
-        /*
-        ResourceConfig config = new ResourceConfig();//Preparation of our Jersey Servlet
-        config.packages("Controllers");//Use the handlers in the controllers resource
-        config.register(MultiPartFeature.class);//support multipart HTML forms
+        ResourceConfig config = new ResourceConfig();
+        config.packages("Controllers");
+        config.register(MultiPartFeature.class);
         ServletHolder servlet = new ServletHolder(new ServletContainer(config));
 
-        ALPNProcessor.Server server = new Server(8081);
+        Server server = new Server(8081);
         ServletContextHandler context = new ServletContextHandler(server, "/");
         context.addServlet(servlet, "/*");
 
@@ -38,13 +43,9 @@ public class main {
         } catch (Exception e) {
             e.printStackTrace();
         }
-*/
-        UserController.search(5,null,null);
-        UserController.update(5,"Willy","Wonka","1969-04-20","munchkin@choc.com","125","Password123!");
-        UserController.search(5,null,null);
-
         closeDatabase();
     }
+
 
     private static void newUser(){
         String firstName = nameValid("first ");//Need validation as none in lower levels
