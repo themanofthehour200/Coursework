@@ -8,7 +8,7 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.sqlite.SQLiteConfig;
-import org.glassfish.jersey.media.multipart.FormDataParam;
+
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -47,30 +47,8 @@ public class main {
     }
 
 
-    private static void newUser(){
-        String firstName = nameValid("first ");//Need validation as none in lower levels
-        String surname = nameValid("sur");
-        out.println("DOB: ");
-        String dateOfBirth = sc.nextLine();
-        String email = emailCheck();
-        out.println("Enter phone number: ");//Not much validation done on phone numbers as they're optional and vary a lot country to country
-        String phoneNumber = sc.nextLine();
-        String password = passwordValid();//Validation needed as none at lower levels
-        UserController.insert(firstName,surname,dateOfBirth,email,phoneNumber,password);
-    }
-
-    private static void login(){
-        out.println("Enter email: ");
-        String email = sc.nextLine();
-        out.println("Enter password");
-        String password = sc.nextLine();
-        if(UserController.search(0,email,password)!=null)out.println("Login successful!");
-        else out.println("Login failed");
-    }
     //Checks first and last names contain no numbers and are at least two characters long
-    private static String nameValid(String position){
-        out.println("Enter "+ position +"name: ");
-        String name  = sc.nextLine();
+    public static boolean nameValid(String name){
 
         Pattern letter = Pattern.compile("[a-zA-z]");//Checks name contains letters (not just whitespace)
         Pattern digit = Pattern.compile("[0-9]");//Checks no numbers in name
@@ -80,50 +58,34 @@ public class main {
         Matcher hasDigit = digit.matcher(name);
         Matcher hasSpecial = special.matcher(name);
 
-        if(!hasLetter.find() || hasDigit.find() || hasSpecial.find() || name.length() < 2) {//Name can't contains numbers or be one character long
-            out.println("Name must be over one character long and can't contain numbers or special characters");
-            nameValid(position);//Uses recursion to ensure that a valid name is entered
-        }
-        return name;
+        //Name can't contains numbers or be one character long
+        return (hasLetter.find() && !hasDigit.find() && !hasSpecial.find() && name.length() >= 2);
     }
 
-    private static String emailCheck(){
-        out.println("Email: ");
-        String email = sc.nextLine();
+    public static boolean emailValid(String email){
         Pattern pattern = Pattern.compile("^.+@.+\\..+$");
         Matcher matcher = pattern.matcher(email);
-        if(!matcher.find()){
-            out.println("Invalid email entered, please try again");
-            emailCheck();
-        }
-        return email;
+        return matcher.find();
     }
 
-    private static String passwordValid(){
-        out.println("Password must be between 8 and 16 characters, contain at least one special character and one number");
-        out.println("Input: ");
-        String password = sc.nextLine();
+    public static boolean passwordValid(String password){
         if(password.length() >= 8 && password.length() <= 16){
             //If statement here as this branch should only be done if the length is correct, as this branch is
             //complex to process; shouldn't be done if not necessary
 
-            Pattern letter = Pattern.compile("[a-zA-z]");//Checks that password contains letters
+            Pattern lowerLetter = Pattern.compile("[a-z]");//Checks that password contains lower case
+            Pattern upperLetter = Pattern.compile("[A-z]");//Checks that password contains upper case
             Pattern digit = Pattern.compile("[0-9]");//and numbers
             Pattern special = Pattern.compile ("[!@#$%&*()_+=|<>?{}\\[\\]~-]");//and a special character
 
-            Matcher hasLetter = letter.matcher(password);//Checks string to see if it contains the parameters that were set
+            Matcher hasLowerLetter = lowerLetter.matcher(password);//Checks string to see if it contains the parameters that were set
+            Matcher hasUpperLetter = upperLetter.matcher(password);//Checks string to see if it contains the parameters that were set
             Matcher hasDigit = digit.matcher(password);
             Matcher hasSpecial = special.matcher(password);
 
-            if (!hasLetter.find() || !hasDigit.find() && !hasSpecial.find()){ //If not meeting requirements of a letter,digit and special character
-                out.println("Invalid input, please try again");
-                passwordValid();
-            }
-        }else{
-            out.println("Invalid input, please try again");
-            passwordValid();
-        }
-        return password;//Will only arrive at this part if password has met requirements
+            return (hasLowerLetter.find() && hasUpperLetter.find() && hasDigit.find() && hasSpecial.find());//If not meeting requirements of a letter,digit and special character
+
+        }else return false;
     }
 
     //establishes a connection to the database

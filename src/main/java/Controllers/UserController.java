@@ -4,9 +4,7 @@ import Server.main;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.System.out;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 
 @Path("Users/")
 public class UserController {
@@ -28,6 +27,7 @@ public class UserController {
     public String selectAll(){
         System.out.println("Users/list");
         JSONArray list = new JSONArray();
+
         try{
             PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Users");
             ResultSet result = ps.executeQuery();
@@ -42,7 +42,6 @@ public class UserController {
                 item.put("PhoneNumber", result.getString(6));
                 item.put("Password", result.getString(7));
                 list.add(item);
-
             }
             return list.toString();
 
@@ -52,73 +51,120 @@ public class UserController {
         }
     }
 
-    //This returns a specific accounts details, allowing the user to check their balance etc.
-    public static List search(int searchID, String email, String password){
+    @GET
+    @Path("search/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+
+    //This returns a specific user's details
+    public String search(@PathParam("id") Integer searchID){
         try {
-            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Users WHERE UserID = ? OR (Email = ? AND Password = ?)");
+            if (searchID == null) {
+                throw new Exception("Thing's 'id' is missing in the HTTP request's URL.");
+            }
+
+            System.out.println("Users/get/" + searchID);
+            JSONObject item = new JSONObject();
+
+            PreparedStatement ps = main.db.prepareStatement("SELECT UserID, FirstName, Surname, DateOfBirth, Email, PhoneNumber, Password FROM Users WHERE UserID = ?");
 
             ps.setInt(1,searchID); //The user with the specific account ID is searched for
-            ps.setString(2,email);
-            ps.setString(3,password);
 
             ResultSet result = ps.executeQuery();
 
-            ArrayList<String> output = new ArrayList<String>(1);
-            output.add(Integer.toString(result.getInt(1)));      //The value is added in to the current ArrayList within output
-            output.add(result.getString(2));
-            output.add(result.getString(3));
-            output.add(result.getString(4));
-            output.add(result.getString(5));
-            output.add(result.getString(6));
-            output.add(result.getString(7));
-
-            out.println(output);
-            return output;
+            if (result.next()) {
+                item.put("UserID", searchID);
+                item.put("Firstname", result.getString(1));
+                item.put("Surname", result.getString(2));
+                item.put("DateOfBirth", result.getString(3));
+                item.put("Email", result.getString(4));
+                item.put("PhoneNumber", result.getString(5));
+                item.put("Password", result.getString(6));
+                return item.toString();
+            } else{
+                throw new Exception("User doesn't exist");
+            }
 
         }
         catch (Exception e){
             out.println("Error searching database 'Users', error message:\n" + e.getMessage());
-            return null;
+            return "{\"error\": \"Unable to get item, please see server console for more info.\"}";
+
         }
     }
 
-    public static void insert(String firstName,String surname, String dateOfBirth,String email, String phoneNumber, String password){
+    @POST
+    @Path("new")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+
+    public String insert(@FormDataParam("firstName") String firstName, @FormDataParam("surname") String surname, @FormDataParam("dateOfBirth") String dateOfBirth,
+                              @FormDataParam("email") String email, @FormDataParam("phoneNumber") String phoneNumber, @FormDataParam("password") String password){
 
         try{
             PreparedStatement ps = main.db.prepareStatement("INSERT INTO Users (UserID, FirstName, Surname, DateOfBirth, Email, PhoneNumber, Password) VALUES (?,?,?,?,?,?,?)");
 
+            /* This uses the varValid() methods in the 'main' class to ascertain if the inputs are in their valid formats or not. */
+            if (!main.nameValid(firstName) || !main.nameValid(surname) || dateOfBirth == null || !main.emailValid(email) || !main.passwordValid(password)) {
+                throw new Exception("One or more of the form parameters are missing or in the wrong data format");
+            }
+
+            out.println("/Users/new");
             ps.setString(1,null);//auto-increments the primary key
             fillColumn(firstName, surname, dateOfBirth, email, phoneNumber, password, ps, 1);
             ps.executeUpdate();
-            out.println("User added successfully");
+            return "{\"status\": \"OK\"}";
 
         } catch (Exception e){
             out.println("Error when inputting user into database, error code\n" + e.getMessage());
+            return "{\"error\": \"Unable to create new item, please see server console for more info.\"}";
         }
     }
 
-    public static void delete(int searchID){
+    @POST
+    @Path("delete")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String delete(@FormDataParam("id") Integer searchID){
         try{
+            if (searchID == null) throw new Exception("One or more form data parameters are missing in the HTTP request.");
+
+            out.println("Users/delete" + searchID);
+
             PreparedStatement ps = main.db.prepareStatement("DELETE FROM Users WHERE UserID = ?");
             ps.setInt(1,searchID);
             ps.execute();
 
-            out.println("Account number" + searchID + "was deleted successfully");
+            return "{\"status\": \"OK\"}";
 
         } catch (Exception e){
             out.println("Error deleting user, error message:\n" + e.getMessage());
+            return "{\"error\": \"Unable to delete item, please see server console for more info.\"}";
         }
     }
 
-    public static void update(int userID, String firstName,String surname, String dateOfBirth,String email, String phoneNumber, String password){
+    @POST
+    @Path("update")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String update(@FormDataParam("UserID") int userID, @FormDataParam("firstName") String firstName, @FormDataParam("surname") String surname, @FormDataParam("dateOfBirth") String dateOfBirth,
+                         @FormDataParam("email") String email, @FormDataParam("phoneNumber") String phoneNumber, @FormDataParam("password") String password){
         try{
+            /* This uses the varValid() methods in the 'main' class to ascertain if the inputs are in their valid formats or not. */
+            if (!main.nameValid(firstName) || !main.nameValid(surname) || dateOfBirth == null || !main.emailValid(email) || !main.passwordValid(password)) {
+                throw new Exception("One or more of the form parameters are missing or in the wrong data format");
+            }
+
+            System.out.println("Users/update id=" + userID);
+
             PreparedStatement ps = main.db.prepareStatement("UPDATE Users SET FirstName = ?, Surname = ?, DateOfBirth = ?, Email = ?, PhoneNumber = ?, Password = ? WHERE UserID = ?");
             fillColumn(firstName, surname, dateOfBirth, email, phoneNumber, password, ps,0);
             ps.setInt(7,userID);
             ps.executeUpdate();
+            return "{\"status\": \"OK\"}";
 
         } catch (Exception e){
             out.println("Error updating user, error message:\n" + e.getMessage());
+            return "{\"error\": \"Unable to update item, please see server console for more info.\"}";
         }
     }
 
