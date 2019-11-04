@@ -1,6 +1,7 @@
 package Controllers;
 
 import Server.main;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -9,14 +10,11 @@ import javax.ws.rs.core.MediaType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 import static java.lang.System.out;
-import org.glassfish.jersey.media.multipart.FormDataParam;
 
 @Path("Users/")
-public class UserController {
+public class UserController{
 
     //This is the method for selecting all rows in the table of Users
     //This method is mainly just used for testing purposes, as this is easier than manually having to check the Accounts table after each applicable test
@@ -65,7 +63,7 @@ public class UserController {
             System.out.println("Users/get/" + searchID);
             JSONObject item = new JSONObject();
 
-            PreparedStatement ps = main.db.prepareStatement("SELECT UserID, FirstName, Surname, DateOfBirth, Email, PhoneNumber, Password FROM Users WHERE UserID = ?");
+            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Users WHERE UserID = ?");
 
             ps.setInt(1,searchID); //The user with the specific account ID is searched for
 
@@ -101,12 +99,19 @@ public class UserController {
                               @FormDataParam("email") String email, @FormDataParam("phoneNumber") String phoneNumber, @FormDataParam("password") String password){
 
         try{
-            PreparedStatement ps = main.db.prepareStatement("INSERT INTO Users (UserID, FirstName, Surname, DateOfBirth, Email, PhoneNumber, Password) VALUES (?,?,?,?,?,?,?)");
+            PreparedStatement psCheck = main.db.prepareStatement("SELECT UserID FROM Users WHERE Email = ?");
+            psCheck.setString(1,email); //This validates that a user is being duplicated, as the email has to be unique to each user
+            ResultSet resultCheck = psCheck.executeQuery();
+            if (resultCheck.next()) {
+                throw new Exception("User already exists");
+            }
 
             /* This uses the varValid() methods in the 'main' class to ascertain if the inputs are in their valid formats or not. */
             if (!main.nameValid(firstName) || !main.nameValid(surname) || dateOfBirth == null || !main.emailValid(email) || !main.passwordValid(password)) {
                 throw new Exception("One or more of the form parameters are missing or in the wrong data format");
             }
+
+            PreparedStatement ps = main.db.prepareStatement("INSERT INTO Users (UserID, FirstName, Surname, DateOfBirth, Email, PhoneNumber, Password) VALUES (?,?,?,?,?,?,?)");
 
             out.println("/Users/new");
             ps.setString(1,null);//auto-increments the primary key
