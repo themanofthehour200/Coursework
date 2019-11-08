@@ -1,7 +1,14 @@
 package Controllers;
 
 import Server.main;
+import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.json.simple.JSONObject;
 
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -10,6 +17,7 @@ import java.util.List;
 
 import static java.lang.System.out;
 
+@Path("Accounts/")
 public class AccountController{
 
     //This is the method for selecting all rows in the table of Users
@@ -63,20 +71,42 @@ public class AccountController{
 
     }
 
-    public static void insert(String accountName, int balance, String currency) {
+    @POST
+    @Path("new")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
 
-        try {
+    public String insert(@FormDataParam("userID") int userID, @FormDataParam("accountName") String accountName, @FormDataParam("balance") int balance,
+                         @FormDataParam("currency") String currency){
+
+        try{
             PreparedStatement ps = main.db.prepareStatement("INSERT INTO Accounts (AccountID, AccountName, Balance, Currency) VALUES (?,?,?,?)");
-            ps.setString(1, null);//As it auto-increments
-            fillColumn(accountName,balance,currency,ps,1);
+            //Adds the account to the database
+            out.println("/Accounts/new");
+            ps.setString(1,null);//auto-increments the primary key
+            fillColumn(accountName,balance,currency,ps,1);//Fills in the ps with the input data
             ps.executeUpdate();
 
-        } catch (Exception e) {
-            out.println("Error when inputting account into database, please email our dedicated support team " +
-                    "at 87534@farnborough.ac.uk with error code:\n" + e.getMessage());
+            //Finds the auto-incremented ID for the new account
+            PreparedStatement ps2 = main.db.prepareStatement("SELECT * FROM Accounts ORDER BY AccountID DESC LIMIT 1");
+            ResultSet result = ps2.executeQuery();
+            if (!result.next()) throw new Exception("Your SQL code doesn't work");
+
+            //Sets the user as a manager on the account with the highest level of access.
+            PreparedStatement ps3 = main.db.prepareStatement("INSERT INTO AccountManagers (ControlID, AccountID, ManagerID, AccessLevel) VALUES (?,?,?,?)");
+            ps3.setString(1,null);
+            ps3.setInt(2,result.getInt(1));
+            ps3.setInt(3,userID);
+            ps3.setInt(4,3);
+            ps3.executeUpdate();
+
+            return "{\"status\": \"OK\"}";
+
+        } catch (Exception e){
+            out.println("Error when inputting user into database, error code\n" + e.getMessage());
+            return "{\"error\": \"Unable to create new item, please see server console for more info.\"}";
         }
     }
-
 
     public static void update(int accountID, String accountName, int balance, String currency) {
         try {

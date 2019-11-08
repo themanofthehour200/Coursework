@@ -135,13 +135,13 @@ public class UserController {
 
             if (result.next()) {
                 item.put("UserID", searchID);
-                item.put("Firstname", result.getString(1));
-                item.put("Surname", result.getString(2));
-                item.put("DateOfBirth", result.getString(3));
-                item.put("Email", result.getString(4));
-                item.put("PhoneNumber", result.getString(5));
-                item.put("Password", result.getString(6));
-                item.put("Token", result.getString(7));
+                item.put("Firstname", result.getString(2));
+                item.put("Surname", result.getString(3));
+                item.put("DateOfBirth", result.getString(4));
+                item.put("Email", result.getString(5));
+                item.put("PhoneNumber", result.getString(6));
+                item.put("Password", result.getString(7));
+                item.put("Token", result.getString(8));
                 return item.toString();
             } else{
                 throw new Exception("User doesn't exist");
@@ -167,9 +167,7 @@ public class UserController {
             PreparedStatement ps = main.db.prepareStatement("INSERT INTO Users (UserID, FirstName, Surname, DateOfBirth, Email, PhoneNumber, Password) VALUES (?,?,?,?,?,?,?)");
 
             /* This uses the varValid() methods in the 'main' class to ascertain if the inputs are in their valid formats or not. */
-            if (!main.nameVali(firstName)) {
-                throw new Exception("One or more of the form parameters are missing or in the wrong data format");
-            } else if (!main.nameVali(surname) || dateOfBirth == null || !main.emailValid(email) || !main.passwordValid(password)) {
+            if (!main.nameValid(firstName) || !main.nameValid(surname) || dateOfBirth == null || !main.emailValid(email) || !main.passwordValid(password)) {
                 throw new Exception("One or more of the form parameters are missing or in the wrong data format");
             }
 
@@ -215,7 +213,7 @@ public class UserController {
                          @FormDataParam("email") String email, @FormDataParam("phoneNumber") String phoneNumber, @FormDataParam("password") String password){
         try{
             /* This uses the varValid() methods in the 'main' class to ascertain if the inputs are in their valid formats or not. */
-            if (!main.nameVali(firstName) || !main.nameVali(surname) || dateOfBirth == null || !main.emailValid(email) || !main.passwordValid(password)) {
+            if (!main.nameValid(firstName) || !main.nameValid(surname) || dateOfBirth == null || !main.emailValid(email) || !main.passwordValid(password)) {
                 throw new Exception("One or more of the form parameters are missing or in the wrong data format");
             }
 

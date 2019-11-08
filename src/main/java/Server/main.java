@@ -46,7 +46,7 @@ public class main {
 
 
     //Checks first and last names contain no numbers and are at least two characters long
-    public static boolean nameVali(String name){
+    public static boolean nameValid(String name){
 
         Pattern letter = Pattern.compile("[a-zA-z]");//Checks name contains letters (not just whitespace)
         Pattern digit = Pattern.compile("[0-9]");//Checks no numbers in name
