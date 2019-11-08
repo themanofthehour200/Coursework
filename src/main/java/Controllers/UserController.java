@@ -9,14 +9,74 @@ import javax.ws.rs.core.MediaType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.UUID;
 
 import static java.lang.System.out;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 @Path("Users/")
 public class UserController {
+
+    @POST
+    @Path("validate")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)//Jersey turns this into an HTTP request handler
+    public String validate(@FormDataParam("userID") int userID, @FormDataParam("token") String token){
+        System.out.println("/Users/validate");
+
+
+        try{
+            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Users WHERE UserID = ? AND Token = ?");
+            ps.setInt(1,userID);
+            ps.setString(2,token);
+            ResultSet result = ps.executeQuery();
+            JSONObject item = new JSONObject();
+            if(result.next()) item.put("Valid", true);
+            else item.put("Valid", false);
+            return item.toString();
+
+        } catch (Exception e){
+            System.out.println("Database error: " + e.getMessage());
+            return "{\"error\": \"Unable to list items, please see server console for more info.\"}";
+        }
+    }
+
+    @POST
+    @Path("login")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String login(@FormDataParam("email") String email, @FormDataParam("password") String password){
+        System.out.println("Users/login");
+        JSONObject item = new JSONObject();
+
+        try{
+            PreparedStatement ps = main.db.prepareStatement("SELECT UserID FROM Users WHERE Email = ? AND Password = ?");
+            ps.setString(1,email);
+            ps.setString(2,password);
+            ResultSet result = ps.executeQuery();
+
+            if (result.next()) { //If user has correct log-in details
+                item.put("UserID", result.getInt(1));
+                String token = UUID.randomUUID().toString();//generates log-in token to be made into a cookie by the client
+                item.put("Token",token);
+
+                out.println("Logged in successfully");
+
+                PreparedStatement ps2 = main.db.prepareStatement("UPDATE Users SET Token = ? WHERE UserID = ?"); //Updating token in database
+                ps2.setString(1,token);
+                ps2.setInt(2,result.getInt(1));
+                ps2.executeUpdate();
+
+                return item.toString();
+            } else{
+                throw new Exception("Invalid password or email");
+            }
+
+        } catch (Exception e){
+            System.out.println("Database error: " + e.getMessage());
+            return "{\"error\": \"Unable to login, please see server console for more info.\"}";
+        }
+    }
 
     //This is the method for selecting all rows in the table of Users
     //This method is mainly just used for testing purposes, as this is easier than manually having to check the Accounts table after each applicable test
@@ -41,6 +101,7 @@ public class UserController {
                 item.put("Email", result.getString(5));
                 item.put("PhoneNumber", result.getString(6));
                 item.put("Password", result.getString(7));
+                item.put("Token",result.getString(8));
                 list.add(item);
             }
             return list.toString();
@@ -65,7 +126,7 @@ public class UserController {
             System.out.println("Users/get/" + searchID);
             JSONObject item = new JSONObject();
 
-            PreparedStatement ps = main.db.prepareStatement("SELECT UserID, FirstName, Surname, DateOfBirth, Email, PhoneNumber, Password FROM Users WHERE UserID = ?");
+            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Users WHERE UserID = ?");
 
             ps.setInt(1,searchID); //The user with the specific account ID is searched for
 
@@ -79,6 +140,7 @@ public class UserController {
                 item.put("Email", result.getString(4));
                 item.put("PhoneNumber", result.getString(5));
                 item.put("Password", result.getString(6));
+                item.put("Token", result.getString(7));
                 return item.toString();
             } else{
                 throw new Exception("User doesn't exist");
@@ -104,7 +166,9 @@ public class UserController {
             PreparedStatement ps = main.db.prepareStatement("INSERT INTO Users (UserID, FirstName, Surname, DateOfBirth, Email, PhoneNumber, Password) VALUES (?,?,?,?,?,?,?)");
 
             /* This uses the varValid() methods in the 'main' class to ascertain if the inputs are in their valid formats or not. */
-            if (!main.nameValid(firstName) || !main.nameValid(surname) || dateOfBirth == null || !main.emailValid(email) || !main.passwordValid(password)) {
+            if (!main.nameVali(firstName)) {
+                throw new Exception("One or more of the form parameters are missing or in the wrong data format");
+            } else if (!main.nameVali(surname) || dateOfBirth == null || !main.emailValid(email) || !main.passwordValid(password)) {
                 throw new Exception("One or more of the form parameters are missing or in the wrong data format");
             }
 
@@ -143,14 +207,14 @@ public class UserController {
     }
 
     @POST
-    @Path("update")
+    @Path("edit")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    public String update(@FormDataParam("UserID") int userID, @FormDataParam("firstName") String firstName, @FormDataParam("surname") String surname, @FormDataParam("dateOfBirth") String dateOfBirth,
+    public String update(@FormDataParam("userID") int userID, @FormDataParam("firstName") String firstName, @FormDataParam("surname") String surname, @FormDataParam("dateOfBirth") String dateOfBirth,
                          @FormDataParam("email") String email, @FormDataParam("phoneNumber") String phoneNumber, @FormDataParam("password") String password){
         try{
             /* This uses the varValid() methods in the 'main' class to ascertain if the inputs are in their valid formats or not. */
-            if (!main.nameValid(firstName) || !main.nameValid(surname) || dateOfBirth == null || !main.emailValid(email) || !main.passwordValid(password)) {
+            if (!main.nameVali(firstName) || !main.nameVali(surname) || dateOfBirth == null || !main.emailValid(email) || !main.passwordValid(password)) {
                 throw new Exception("One or more of the form parameters are missing or in the wrong data format");
             }
 
