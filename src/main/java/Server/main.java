@@ -1,6 +1,5 @@
 package Server;
 
-import Controllers.UserController;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -8,7 +7,6 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.sqlite.SQLiteConfig;
-
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -27,21 +25,21 @@ public class main {
         openDatabase("courseworkDatabase.db");
 
 
-        ResourceConfig config = new ResourceConfig();
-        config.packages("Controllers");
-        config.register(MultiPartFeature.class);
-        ServletHolder servlet = new ServletHolder(new ServletContainer(config));
+        ResourceConfig config = new ResourceConfig(); //Prepping our 'Servlet'
+        config.packages("Controllers"); //This makes sure that the controller classes can access the HTTp server
+        config.register(MultiPartFeature.class); //Makes sure server supports multi-part HTML forms
+        ServletHolder servlet = new ServletHolder(new ServletContainer(config)); //Instantiate the Servlet
 
-        Server server = new Server(8081);
-        ServletContextHandler context = new ServletContextHandler(server, "/");
-        context.addServlet(servlet, "/*");
+        Server server = new Server(8081); //Prepping our jetty server to listen on port 8081
+        ServletContextHandler context = new ServletContextHandler(server, "/"); //Instantiate the server
+        context.addServlet(servlet, "/*"); //Connect the servlet to the server
 
         try {
-            server.start();
-            System.out.println("Server successfully started.");
-            server.join();
+            server.start(); //Start the server
+            out.println("Server successfully started."); //Helpful message for development
+            server.join(); //Means program will run indefinitely, as it is joining the main thread
         } catch (Exception e) {
-            e.printStackTrace();
+            e.printStackTrace(); //Error catching and handling here
         }
         closeDatabase();
     }
