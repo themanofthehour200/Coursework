@@ -21,6 +21,7 @@ public class UserController {
     @Path("validate")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)//Jersey turns this into an HTTP request handler
+    //This is the method for validating that the client's token is valid
     public String validate(@FormDataParam("userID") int userID, @FormDataParam("token") String token){
         System.out.println("/Users/validate");
 
@@ -40,7 +41,7 @@ public class UserController {
             return "{\"error\": \"Unable to list items, please see server console for more info.\"}";
         }
     }
-
+//This is the method for logging in
     @POST
     @Path("login")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -188,11 +189,11 @@ public class UserController {
     @Path("delete")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    public String delete(@FormDataParam("id") Integer searchID){
+    public String delete(@FormDataParam("userID") Integer searchID){
         try{
             if (searchID == null) throw new Exception("One or more form data parameters are missing in the HTTP request.");
 
-            out.println("Users/delete" + searchID);
+            out.println("Users/delete " + searchID);
 
             PreparedStatement ps = main.db.prepareStatement("DELETE FROM Users WHERE UserID = ?");
             ps.setInt(1,searchID);
