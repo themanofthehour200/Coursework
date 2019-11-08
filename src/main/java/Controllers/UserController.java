@@ -217,7 +217,7 @@ public class UserController {
                 throw new Exception("One or more of the form parameters are missing or in the wrong data format");
             }
 
-            System.out.println("Users/update id=" + userID);
+            System.out.println("Users/edit id = " + userID);
 
             PreparedStatement ps = main.db.prepareStatement("UPDATE Users SET FirstName = ?, Surname = ?, DateOfBirth = ?, Email = ?, PhoneNumber = ?, Password = ? WHERE UserID = ?");
             fillColumn(firstName, surname, dateOfBirth, email, phoneNumber, password, ps,0);

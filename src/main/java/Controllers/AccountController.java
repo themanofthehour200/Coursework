@@ -107,16 +107,24 @@ public class AccountController{
             return "{\"error\": \"Unable to create new item, please see server console for more info.\"}";
         }
     }
+    @POST
+    @Path("edit")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String update(@FormDataParam("accountID") int accountID, @FormDataParam("accountName") String accountName,
+                         @FormDataParam("balance") int balance, @FormDataParam("currency") String currency){
+        try{
+            System.out.println("Accounts/edit id = " + accountID);
 
-    public static void update(int accountID, String accountName, int balance, String currency) {
-        try {
             PreparedStatement ps = main.db.prepareStatement("UPDATE Accounts SET AccountName = ?, Balance = ?, Currency = ? WHERE AccountID = ?");
             fillColumn(accountName,balance,currency,ps,0);
             ps.setInt(4, accountID);
             ps.executeUpdate();
+            return "{\"status\": \"OK\"}";
 
-        } catch (Exception e) {
-            out.println("Error updating user, error message:\n" + e.getMessage());
+        } catch (Exception e){
+            out.println("Error updating account, error message:\n" + e.getMessage());
+            return "{\"error\": \"Unable to update item, please see server console for more info.\"}";
         }
     }
 
