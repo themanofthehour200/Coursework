@@ -32,8 +32,7 @@ public class UserController {
             ps.setString(2,token);
             ResultSet result = ps.executeQuery();
             JSONObject item = new JSONObject();
-            if(result.next()) item.put("Valid", true);
-            else item.put("Valid", false);
+            item.put("Valid", result.next());//If any results are brought back is whether the token is correct or not
             return item.toString();
 
         } catch (Exception e){

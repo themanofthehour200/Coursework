@@ -2,74 +2,77 @@ package Controllers;
 
 import Server.main;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+
 
 import static java.lang.System.out;
 
 @Path("Accounts/")
 public class AccountController{
 
-    //This is the method for selecting all rows in the table of Users
-    //This method is mainly just used for testing purposes, as this is easier than manually having to check the Accounts table after each applicable test
-    public static List selectAll() {
-        try {
-            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Accounts");
+
+    @POST
+    @Path("viewAll")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)//Jersey turns this into an HTTP request handler
+    public String viewAll(@FormDataParam("userID") int userID){
+        System.out.println("Accounts/viewAll");
+        JSONArray list = new JSONArray();
+
+        try{
+            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Accounts INNER JOIN AccountManagers on AccountManagers.ManagerID = ? AND AccountManagers.AccountID = Accounts.AccountID");
+            ps.setInt(1,userID);
             ResultSet result = ps.executeQuery();
 
-            int count = 0;
-            List<List<String>> output = new ArrayList<List<String>>(); //This is a List of ArrayLists. This is what is returned.
-            //An ArrayList is used instead of an array as it is mutatable and we don't know how many rows there are in the table
-
-            while (result.next()) {
-                output.add(new ArrayList<String>());            //A new arraylist is created within the overall output List
-                output.get(count).add(Integer.toString(result.getInt(1)));      //The value is added in to the current ArrayList within output
-                output.get(count).add(result.getString(2));
-                output.get(count).add(Integer.toString(result.getInt(3)));
-                output.get(count).add(result.getString(4));
-                out.println(output.get(count));
-                count++;
+            while(result.next()){//This will then display all of the details of account the user has access to in a JSON array
+                JSONObject item = new JSONObject();
+                item.put("AccountID",result.getInt(1));
+                item.put("AccountName",result.getString(2));
+                item.put("Balance",result.getInt(3));
+                item.put("Currency",result.getString(4));
+                list.add(item);
             }
-            return output;
+            return list.toString();
 
-        } catch (Exception e) {
-            out.println("Error reading database, error message:\n" + e.getMessage());
-            return null;
+        } catch (Exception e){
+            System.out.println("Database error: " + e.getMessage());
+            return "{\"error\": \"Unable to list items, please see server console for more info.\"}";
         }
     }
 
-    //This returns a specific accounts details, allowing the user to check their balance etc.
-    public static List search(int accountID) {
-        try {
-            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Accounts WHERE AccountID = ?");
-            ps.setInt(1, accountID); //The account with the specific account ID is searched for
+    @POST
+    @Path("accessCheck")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)//Jersey turns this into an HTTP request handler
+    //This is the method for validating that the client's token is valid
+    public String validate(@FormDataParam("userID") int userID, @FormDataParam("accountID") String accountID){
+        System.out.println("/Accounts/accessCheck");
+        try{
+            PreparedStatement ps = main.db.prepareStatement("SELECT AccessLevel FROM AccountManagers WHERE ManagerID = ? AND AccountID = ?");
+            ps.setInt(1,userID);
+            ps.setString(2,accountID);
             ResultSet result = ps.executeQuery();
+            JSONObject item = new JSONObject();
+            if(result.next()){//If any results are found
+                item.put("accessLevel",result.getInt(1));
+                return item.toString();
+            }else{//If no relationship between user and account is found
+                throw new Exception("User has no access to account");
+            }
 
-            ArrayList<String> output = new ArrayList<String>(1);
-            output.add(Integer.toString(result.getInt(1)));      //The value is added in to the current ArrayList within output
-            output.add(result.getString(2));
-            output.add(Integer.toString(result.getInt(3)));
-            output.add(result.getString(4));
-
-            out.println(output);
-            return output;
-
-        } catch (Exception e) {
-            out.println("Error searching database, error message:\n" + e.getMessage());
-            return null;
+        } catch (Exception e){
+            System.out.println("Database error: " + e.getMessage());
+            return "{\"error\": \"Unable to list items, please see server console for more info.\"}";
         }
-
     }
+
 
     @POST
     @Path("new")
