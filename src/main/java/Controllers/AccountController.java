@@ -15,37 +15,35 @@ import java.sql.SQLException;
 import static java.lang.System.out;
 
 @Path("Accounts/")
-public class AccountController{
-
-
+public class AccountController {
     @POST
     @Path("viewAll")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)//Jersey turns this into an HTTP request handler
-    public String viewAll(@FormDataParam("userID") int userID){
-        System.out.println("Accounts/viewAll");
+    public String viewAll(@FormDataParam("userID") int userID) {
         JSONArray list = new JSONArray();
-
         try{
-            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Accounts INNER JOIN AccountManagers on AccountManagers.ManagerID = ? AND AccountManagers.AccountID = Accounts.AccountID");
-            ps.setInt(1,userID);
-            ResultSet result = ps.executeQuery();
+        PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Accounts INNER JOIN AccountManagers AM on Accounts.AccountID = AM.AccountID AND AM.ManagerID = ?");
+        ps.setInt(1,userID);
 
-            while(result.next()){//This will then display all of the details of account the user has access to in a JSON array
-                JSONObject item = new JSONObject();
-                item.put("AccountID",result.getInt(1));
-                item.put("AccountName",result.getString(2));
-                item.put("Balance",result.getInt(3));
-                item.put("Currency",result.getString(4));
-                list.add(item);
-            }
-            return list.toString();
+        ResultSet result = ps.executeQuery();
 
-        } catch (Exception e){
-            System.out.println("Database error: " + e.getMessage());
-            return "{\"error\": \"Unable to list items, please see server console for more info.\"}";
+        while (result.next()) {//This will then display all of the details of account the user has access to in a JSON array
+            JSONObject item = new JSONObject();
+            item.put("AccountID", result.getInt(1));
+            item.put("AccountName", result.getString(2));
+            item.put("Balance", result.getInt(3));
+            item.put("Currency", result.getString(4));
+            list.add(item);
         }
+        return list.toString();
+
+    } catch(Exception e) {
+        System.out.println("Database error: " + e.getMessage());
+        return "{\"error\": \"Unable to list items, please see server console for more info.\"}";
     }
+}
+
 
     @POST
     @Path("accessCheck")
