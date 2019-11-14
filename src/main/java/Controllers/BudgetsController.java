@@ -97,7 +97,7 @@ public class BudgetsController{
     }
 
 
-    //This method returns all categories available to the user
+    //This method returns all budgets available to the user
     @GET
     @Path("list/{userID}")
     @Produces(MediaType.APPLICATION_JSON)

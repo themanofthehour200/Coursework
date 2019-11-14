@@ -1,7 +1,12 @@
 package Controllers;
 
 import Server.main;
+import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -10,77 +15,76 @@ import java.util.List;
 
 import static java.lang.System.out;
 
+@Path("StandingOrders/")
 public class StandingOrderController{
 
     //This is the method for selecting all rows in the table of Users
     //This method is mainly just used for testing purposes, as this is easier than manually having to check the Accounts table after each applicable test
-    public static List selectAll(){
-        try{
-            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM StandingOrders");
-            ResultSet result = ps.executeQuery();
+    //This method returns all budgets available to the user
+    @GET
+    @Path("list/{accountID}")
+    @Produces(MediaType.APPLICATION_JSON)
 
-            int count = 0;
-            List<List<String>> output = new ArrayList<List<String>>(); //This is a List of ArrayLists. This is what is returned.
-            //An ArrayList is used instead of an array as it is mutatable and we don't know how many rows there are in the table
+    //This returns a specific user's details
+    public String search(@PathParam("accountID") Integer searchID){
+        System.out.println("StandingOrders/list/" + searchID);
+
+        try{
+            if (searchID == null) throw new Exception("No account exists");
+            JSONArray list = new JSONArray();
+
+            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM StandingOrders WHERE AccountID = ?");
+            ps.setInt(1,searchID);
+            ResultSet result = ps.executeQuery();
 
             while(result.next()){
-                output.add(new ArrayList<String>());            //A new arraylist is created within the overall output List
-                output.get(count).add(Integer.toString(result.getInt(1)));      //The value is added in to the current ArrayList within output
-                output.get(count).add(Integer.toString(result.getInt(2)));
-                output.get(count).add(Integer.toString(result.getInt(3)));
-                output.get(count).add(Integer.toString(result.getInt(4)));
-                output.get(count).add(Integer.toString(result.getInt(5)));
-                output.get(count).add(result.getString(6));
-                out.println(output.get(count)); //To be removed once testing phase one is done
-                count++;
+                JSONObject item = new JSONObject();
+                item.put("OrderID", result.getInt(1));
+                item.put("AccountID", result.getInt(2));
+                item.put("CategoryID", result.getInt(3));
+                item.put("Amount", result.getInt(4));
+                item.put("Duration", result.getInt(5));
+                item.put("LastPaid", result.getInt(6));
+                list.add(item);
             }
-            return output;
+            return list.toString();
 
         } catch (Exception e){
-            out.println("Error reading database 'StandingOrders', error message:\n" + e.getMessage());
-            return null;
+            System.out.println("Database error: " + e.getMessage());
+            return "{\"error\": \"Unable to list items, please see server console for more info.\"}";
         }
     }
 
-    //This returns a specific accounts details, allowing the user to check their balance etc.
-    public static List search(int searchID, int accountID){
-        try {
-            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM StandingOrders WHERE OrderID = ? OR AccountID = ?");
-            ps.setInt(1,searchID); //The user with the specific account ID is searched for
-            ps.setInt(2,accountID);
-            ResultSet result = ps.executeQuery();
 
-            ArrayList<String> output = new ArrayList<String>(1);
-            output.add(Integer.toString(result.getInt(1)));      //The value is added in to the current ArrayList within output
-            output.add(Integer.toString(result.getInt(2)));
-            output.add(Integer.toString(result.getInt(3)));
-            output.add(Integer.toString(result.getInt(4)));
-            output.add(Integer.toString(result.getInt(5)));
-            output.add(result.getString(6));
-            out.println(output);
-            return output;
+//This creates a new standing order for the client's account
+    @POST
+    @Path("new")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
 
-        }
-        catch (Exception e){
-            out.println("Error searching database 'StandingOrders', error message:\n" + e.getMessage());
-            return null;
-        }
-
-    }
-
-    public static void insert(int accountID, int categoryID, int amount, int duration, String lastPaid){
+    public String insert(@FormDataParam("accountID") int accountID, @FormDataParam("categoryID") int categoryID, @FormDataParam("amount") int amount,
+                         @FormDataParam("duration") int duration, @FormDataParam("lastPaid") String lastPaid){
 
         try{
+            out.println("/StandingOrders/new");
+
+            if(duration<=0) throw new Exception("Input duration invalid");
+
+            //Creates the new StandingOrder for the user
             PreparedStatement ps = main.db.prepareStatement("INSERT INTO StandingOrders (OrderID, AccountID, CategoryID, Amount, Duration, LastPaid) VALUES (?,?,?,?,?,?)");
 
-            ps.setString(1,null);
-            fillColumn(accountID, categoryID, amount, duration, lastPaid, ps,1);
+            ps.setString(1,null);//auto-increments the primary key
+            fillColumn(accountID, categoryID, amount, duration, lastPaid, ps, 1);
             ps.executeUpdate();
+            return "{\"status\": \"OK\"}";
 
         } catch (Exception e){
-            out.println("Error when inputting transaction into database, error code\n" + e.getMessage());
+            out.println("Error when inputting budget into database, error code\n" + e.getMessage());
+            return "{\"error\": \"Unable to create new item, please see server console for more info.\"}";
         }
     }
+
+
 
     public static void delete(int searchID){
         try{
@@ -95,15 +99,25 @@ public class StandingOrderController{
         }
     }
 
-    public static void update(int orderID, int accountID, int categoryID, int amount, int duration, String lastPaid){
+    @POST
+    @Path("edit")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String update(@FormDataParam("orderID") int orderID, @FormDataParam("accountID") int accountID, @FormDataParam("categoryID") int categoryID, @FormDataParam("amount") int amount,
+                         @FormDataParam("duration") int duration, @FormDataParam("lastPaid") String lastPaid){
         try{
+
+            System.out.println("StandingOrders/edit id = " + orderID);
+
             PreparedStatement ps = main.db.prepareStatement("UPDATE StandingOrders SET AccountID = ?, CategoryID = ?, Amount = ?, Duration = ?, LastPaid = ? WHERE OrderID = ?");
             fillColumn(accountID, categoryID, amount, duration, lastPaid, ps,0);
             ps.setInt(6,orderID);
             ps.executeUpdate();
+            return "{\"status\": \"OK\"}";
 
         } catch (Exception e){
-            out.println("Error updating order, error message:\n" + e.getMessage());
+            out.println("Error updating user, error message:\n" + e.getMessage());
+            return "{\"error\": \"Unable to update item, please see server console for more info.\"}";
         }
     }
 
