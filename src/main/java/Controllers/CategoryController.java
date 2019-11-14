@@ -1,7 +1,12 @@
 package Controllers;
 
 import Server.main;
+import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -9,88 +14,103 @@ import java.util.List;
 
 import static java.lang.System.out;
 
+@Path("Categories/")
 public class CategoryController{
 
-    //This is the method for selecting all rows in the table of Users
-    //This method is mainly just used for testing purposes, as this is easier than manually having to check the Accounts table after each applicable test
-    public static List selectAll(){
-        try{
-            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Categories");
-            ResultSet result = ps.executeQuery();
+    //This method returns all categories available to the user
+    @GET
+    @Path("list/{userID}")
+    @Produces(MediaType.APPLICATION_JSON)
 
-            int count = 0;
-            List<List<String>> output = new ArrayList<List<String>>(); //This is a List of ArrayLists. This is what is returned.
-            //An ArrayList is used instead of an array as it is mutatable and we don't know how many rows there are in the table
+    //This returns a specific user's details
+    public String search(@PathParam("userID") Integer searchID){
+        System.out.println("Categories/list/" + searchID);
+
+        try{
+            if (searchID == null) throw new Exception("No user exists");
+            JSONArray list = new JSONArray();
+
+            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Categories WHERE AccessID = 0 OR AccessID = ?");
+            ps.setInt(1,searchID);
+            ResultSet result = ps.executeQuery();
 
             while(result.next()){
-                output.add(new ArrayList<String>());            //A new arraylist is created within the overall output List
-                output.get(count).add(Integer.toString(result.getInt(1)));      //The value is added in to the current ArrayList within output
-                output.get(count).add(result.getString(2));
-                output.get(count).add(Integer.toString(result.getInt(3)));
-                out.println(output.get(count)); //To be removed once testing phase one is done
-                count++;
+                JSONObject item = new JSONObject();
+                item.put("CategoryID", result.getInt(1));
+                item.put("CategoryName", result.getString(2));
+                item.put("AccessID", result.getInt(3));
+                list.add(item);
             }
-            return output;
+            return list.toString();
 
         } catch (Exception e){
-            out.println("Error reading database 'Category', error message:\n" + e.getMessage());
-            return null;
+            System.out.println("Database error: " + e.getMessage());
+            return "{\"error\": \"Unable to list items, please see server console for more info.\"}";
         }
     }
 
-    //This returns a specific accounts details, allowing the user to check their balance etc.
-    public static List search(int searchID, String categoryName, int accessID){
-        try {
-            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Categories WHERE (CategoryID = ? OR CategoryName = ?) AND AccessID = ? ");
-            ps.setInt(1,searchID); //The user with the specific account ID is searched for
-            ps.setString(2,categoryName);
-            ps.setInt(3,accessID);
-            ResultSet result = ps.executeQuery();
 
-            ArrayList<String> output = new ArrayList<String>(1);
-            output.add(Integer.toString(result.getInt(1)));      //The value is added in to the current ArrayList within output
-            output.add(result.getString(2));
-            output.add(Integer.toString(result.getInt(3)));
+    @POST
+    @Path("new")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
 
-            out.println(output);
-            return output;
-
-        }
-        catch (Exception e){
-            out.println("Error searching database 'Category', error message:\n" + e.getMessage());
-            return null;
-        }
-
-    }
-
-    public static void insert(String categoryName, int accessID){
+    public String insert(@FormDataParam("categoryName") String categoryName, @FormDataParam("accessID") int accessID){
 
         try{
-            PreparedStatement ps = main.db.prepareStatement("INSERT INTO Categories (CategoryID, CategoryName, AccessID) VALUES (?,?,?)");
+            out.println("/Categories/new");
 
-            ps.setString(1,null);
-            ps.setString(2, categoryName);
-            ps.setInt(3, accessID);
+            //This is to ensure that no user has access to multiple categories with the same name
+            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Categories WHERE CategoryName = ? AND AccessID = ? OR AccessID = 0");
+            ps.setString(1,categoryName);
+            ps.setInt(2,accessID);
+            ResultSet result = ps.executeQuery();
+            if(result.next()) throw new Exception("Category already exists");
 
-            ps.executeUpdate();
+            //Preparing to insert the new category into the database
+            PreparedStatement ps2 = main.db.prepareStatement("INSERT INTO Categories (CategoryID, CategoryName, AccessID) VALUES (?,?,?)");
+
+
+            ps2.setString(1,null);//auto-increments the primary key
+            ps2.setString(2,categoryName);
+            ps2.setInt(3,accessID);
+            ps2.executeUpdate();
+            return "{\"status\": \"OK\"}";
 
         } catch (Exception e){
             out.println("Error when inputting category into database, error code\n" + e.getMessage());
+            return "{\"error\": \"Unable to create new item, please see server console for more info.\"}";
         }
     }
 
-    public static void delete(int searchID){
+    @POST
+    @Path("delete")
+    /*The reason that this uses form data instead of having the data be sent via the API path in the
+      path name is that the form is more secure*/
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String delete(@FormDataParam("categoryID") Integer searchID){
         try{
+            //This throws when there has been no categoryID entered
+            if (searchID == null) throw new Exception("One or more form data parameters are missing in the HTTP request.");
+
+            //This makes sure that the client can't change any of the default categories
+            if(searchID <= 10 && searchID >= 0) throw new Exception("Can't delete default category");
+
+            out.println("Categories/delete id = " + searchID);
+
             PreparedStatement ps = main.db.prepareStatement("DELETE FROM Categories WHERE CategoryID = ?");
             ps.setInt(1,searchID);
             ps.execute();
 
-            out.println("Category number " + searchID + " was deleted successfully");
+            return "{\"status\": \"OK\"}";
 
         } catch (Exception e){
             out.println("Error deleting category, error message:\n" + e.getMessage());
+            return "{\"error\": \"Unable to delete item, please see server console for more info.\"}";
         }
     }
+
 
     public static void update(int categoryID, String categoryName, int accessID){
         try{
