@@ -16,7 +16,7 @@ import java.util.List;
 import static java.lang.System.out;
 
 @Path("Transactions/")
-public class TransactionsController{
+public class TransactionsController {
 
     @POST
     @Path("create")
@@ -24,40 +24,34 @@ public class TransactionsController{
     @Produces(MediaType.APPLICATION_JSON)
 
     public String insert(@FormDataParam("categoryID") int categoryID, @FormDataParam("date") String date, @FormDataParam("accountID") int accountID, @FormDataParam("balanceChange") int balanceChange,
-                         @FormDataParam("description") String description, @FormDataParam("standingOrderID") int standingOrderID){
+                         @FormDataParam("description") String description, @FormDataParam("standingOrderID") int standingOrderID) {
 
-        try{
+        try {
+            //Creates the ps for the SQL to create the transaction in the Transactions tables
             PreparedStatement ps = main.db.prepareStatement("INSERT INTO Transactions (TransactionID, AccountID, BalanceChange, CategoryID," +
                     " Description, Date, StandingOrderID) VALUES (?,?,?,?,?,?,?)"); //This adds the transaction to the transaction database
 
-            //makes sure that a transaction with a value of zero isn't done, as this is pointless and may lead to errors
+            //makes sure that a transaction with a value of zero isn't done, as this is a pointless transaction to make and may lead to errors
             if (balanceChange == 0) throw new Exception("Transaction cannot be for a value of 0");
 
             out.println("Transactions/create");
 
-            ps.setString(1,null);//auto-increments the primary key
-            fillColumn(accountID,balanceChange,categoryID,description,date,standingOrderID,ps,1);
+            ps.setString(1, null);//auto-increments the primary key
+
+            //A function which fills the ps with the correct values
+            fillColumn(accountID, balanceChange, categoryID, description, date, standingOrderID, ps, 1);
 
             ps.executeUpdate();
 
-            //This gets the account balance for the account the transaction is relating to
-            PreparedStatement ps2 = main.db.prepareStatement("SELECT Balance FROM Accounts WHERE AccountID = ?");
+            /*Calls the method changingBalance. This will update the account balance
+             to the correct amount once the transaction has been created. It returns a boolean
+             value, which is indicative of whether the changes have been made successfully or not*/
+            if (changingBalance(accountID, -(balanceChange))) return "{\"status\": \"OK\"}";
+            else throw new Exception("Error when updating account balance");
 
-            JSONObject item = new JSONObject();
 
-            ps2.setInt(1,accountID); //The user with the specific account ID is searched for
-            ResultSet result = ps2.executeQuery();
-
-            //This updates the account balance to reflect the transaction
-
-            PreparedStatement ps3 =  main.db.prepareStatement("UPDATE Accounts SET Balance = ? WHERE AccountID = ?");
-            ps3.setInt(1,(result.getInt(1)-balanceChange));
-            ps3.setInt(2,accountID);
-            ps3.executeUpdate();
-            return "{\"status\": \"OK\"}";
-
-        } catch (Exception e){
-            out.println("Error when inputting user into database, error code\n" + e.getMessage());
+        } catch (Exception e) {
+            out.println("Error when creating transaction, error code\n" + e.getMessage());
             return "{\"error\": \"Unable to create new item, please see server console for more info.\"}";
         }
     }
@@ -67,7 +61,7 @@ public class TransactionsController{
     @Produces(MediaType.APPLICATION_JSON)
 
     //This returns a specific user's details
-    public String search(@PathParam("id") Integer searchID){
+    public String search(@PathParam("id") Integer searchID) {
         try {
             if (searchID == null) {
                 throw new Exception("Thing's 'id' is missing in the HTTP request's URL.");
@@ -79,7 +73,7 @@ public class TransactionsController{
 
             PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Transactions WHERE AccountID = ?");
 
-            ps.setInt(1,searchID); //The user with the specific account ID is searched for
+            ps.setInt(1, searchID); //The user with the specific account ID is searched for
 
             ResultSet result = ps.executeQuery();
 
@@ -96,8 +90,7 @@ public class TransactionsController{
             }
             return list.toString();
 
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             out.println("Error searching database 'Transactions', error message:\n" + e.getMessage());
             return "{\"error\": \"Unable to get item, please see server console for more info.\"}";
 
@@ -108,16 +101,16 @@ public class TransactionsController{
     @Path("search")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)//Jersey turns this into an HTTP request handler
-    public String search(@FormDataParam("categoryID") int categoryID, @FormDataParam("date") String date, @FormDataParam("accountID") int accountID){
+    public String search(@FormDataParam("categoryID") int categoryID, @FormDataParam("date") String date, @FormDataParam("accountID") int accountID) {
 
         System.out.println("Transactions/search");
         JSONArray list = new JSONArray();
 
-        try{
+        try {
             PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Transactions WHERE AccountID = ? AND Date = ? OR CategoryID = ?");
-            ps.setInt(1,accountID);
-            ps.setString(2,date);
-            ps.setInt(3,categoryID);
+            ps.setInt(1, accountID);
+            ps.setString(2, date);
+            ps.setInt(3, categoryID);
             ResultSet result = ps.executeQuery();
 
             boolean added = false;//This determines whether any transactions with the search criteria have been found
@@ -134,16 +127,56 @@ public class TransactionsController{
                 list.add(item);
             }
             if (added) return list.toString(); //If transactions found then return them
-            else throw new Exception("No transactions with search criteria found"); //if none have been found then give an error
+            else
+                throw new Exception("No transactions with search criteria found"); //if none have been found then give an error
 
-        } catch (Exception e){
+        } catch (Exception e) {
             System.out.println("Database error: " + e.getMessage());
             return "{\"error\": \"Unable to list items, please see server console for more info.\"}";
         }
     }
 
-    public static List selectAll(){
-        try{
+    @POST
+    @Path("edit")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String update(@FormDataParam("transactionID") int transactionID, @FormDataParam("categoryID") int categoryID, @FormDataParam("date") String date,
+                         @FormDataParam("accountID") int accountID, @FormDataParam("balanceChange") int balanceChange,
+                         @FormDataParam("description") String description, @FormDataParam("standingOrderID") int standingOrderID) {
+        try {
+            System.out.println("Transactions/edit id = " + transactionID);
+            //Stops any null balance transactions
+            if (balanceChange == 0) throw new Exception("Transaction cannot be for a value of 0");
+
+            PreparedStatement ps = main.db.prepareStatement("SELECT BalanceChange FROM Transactions WHERE TransactionID = ?");
+            ps.setInt(1, transactionID);
+            ResultSet result = ps.executeQuery();
+            //This value is the amount by which the account balance will change due to the transaction amount changing
+            int accountChange = result.getInt(1) - balanceChange;
+
+            PreparedStatement ps2 = main.db.prepareStatement("UPDATE Transactions SET AccountID = ?, BalanceChange = ?, CategoryID= ?, Description = ?, " +
+                    "Date = ?,  StandingOrderID = ? WHERE TransactionID = ?");
+
+            fillColumn(accountID, balanceChange, categoryID, description, date, standingOrderID, ps2, 0);
+            ps2.setInt(7, transactionID);
+            ps2.executeUpdate();
+
+
+            /*Calls the method changingBalance. This will update the account balance
+             to the correct amount once the transaction has been created. It returns a boolean
+             value, which is indicative of whether the changes have been made successfully or not*/
+            if (changingBalance(accountID, accountChange)) return "{\"status\": \"OK\"}";
+            else throw new Exception("Error when updating account balance");
+
+        } catch (Exception e) {
+            out.println("Error updating account, error message:\n" + e.getMessage());
+            return "{\"error\": \"Unable to update item, please see server console for more info.\"}";
+        }
+    }
+
+
+    public static List selectAll() {
+        try {
             PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Transactions");
             ResultSet result = ps.executeQuery();
 
@@ -151,7 +184,7 @@ public class TransactionsController{
             List<List<String>> output = new ArrayList<List<String>>(); //This is a List of ArrayLists. This is what is returned.
             //An ArrayList is used instead of an array as it is mutatable and we don't know how many rows there are in the table
 
-            while(result.next()){
+            while (result.next()) {
                 output.add(new ArrayList<String>());            //A new arraylist is created within the overall output List
                 output.get(count).add(Integer.toString(result.getInt(1)));      //The value is added in to the current ArrayList within output
                 output.get(count).add(Integer.toString(result.getInt(2)));
@@ -165,17 +198,17 @@ public class TransactionsController{
             }
             return output;
 
-        } catch (Exception e){
+        } catch (Exception e) {
             out.println("Error reading database 'Transactions', error message:\n" + e.getMessage());
             return null;
         }
     }
 
     //This returns a specific accounts details, allowing the user to check their balance etc.
-    public static List search(int searchID){
+    public static List search(int searchID) {
         try {
             PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Transactions WHERE TransactionID = ?");
-            ps.setInt(1,searchID); //The user with the specific account ID is searched for
+            ps.setInt(1, searchID); //The user with the specific account ID is searched for
             ResultSet result = ps.executeQuery();
 
             ArrayList<String> output = new ArrayList<String>(1);
@@ -191,52 +224,78 @@ public class TransactionsController{
             out.println(output);
             return output;
 
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             out.println("Error searching database 'Transactions', error message:\n" + e.getMessage());
             return null;
         }
 
     }
 
-    public static void insert(int accountID, int balanceChange, int categoryID, String description, String date, int standingOrderID){
+    public static void insert(int accountID, int balanceChange, int categoryID, String description, String date, int standingOrderID) {
 
-        try{
+        try {
             PreparedStatement ps = main.db.prepareStatement("INSERT INTO Transactions (TransactionID, AccountID, BalanceChange, CategoryID, Description, Date, StandingOrderID ) VALUES (?,?,?,?,?,?,?)");
 
-            ps.setString(1,null);
-            fillColumn(accountID, balanceChange, categoryID, description, date, standingOrderID, ps,1);
+            ps.setString(1, null);
+            fillColumn(accountID, balanceChange, categoryID, description, date, standingOrderID, ps, 1);
 
             ps.executeUpdate();
 
-        } catch (Exception e){
+        } catch (Exception e) {
             out.println("Error when inputting transaction into database, error code\n" + e.getMessage());
         }
     }
 
-    public static void delete(int searchID){
+    //Deletes an exisitng transaction
+    @POST
+    @Path("delete")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String delete(@FormDataParam("transactionID") Integer searchID){
         try{
-            PreparedStatement ps = main.db.prepareStatement("DELETE FROM Transactions WHERE TransactionID = ?");
-            ps.setInt(1,searchID);
-            ps.execute();
+            /*searchID is stored as an Integer instead of an int to allow for this if statement
+            as 'int' values cannot be null*/
 
-            out.println("Transaction number" + searchID + "was deleted successfully");
+            if (searchID == null) throw new Exception("One or more form data parameters are missing in the HTTP request.");
+
+            out.println("Transactions/delete id = " + searchID);
+
+            PreparedStatement ps = main.db.prepareStatement("SELECT AccountID, BalanceChange FROM Transactions WHERE TransactionID = ?");
+            ps.setInt(1, searchID);
+            ResultSet result = ps.executeQuery();
+
+            //The accountID of the account that needs its balance updated
+            int accountID = result.getInt(1);
+            //This value is the amount by which the account balance will change due to the transaction amount changing
+            int accountChange = result.getInt(2);
+
+            PreparedStatement ps2 = main.db.prepareStatement("DELETE FROM Transactions WHERE TransactionID = ?");
+            ps2.setInt(1,searchID);
+            ps2.execute();
+
+            /*Calls the method changingBalance. This will update the account balance
+             to the correct amount once the transaction has been created. It returns a boolean
+             value, which is indicative of whether the changes have been made successfully or not*/
+
+            if (changingBalance(accountID, accountChange)) return "{\"status\": \"OK\"}";
+            else throw new Exception("Error when updating account balance");
 
         } catch (Exception e){
-            out.println("Error deleting transaction, error message:\n" + e.getMessage());
+            out.println("Error deleting user, error message:\n" + e.getMessage());
+            return "{\"error\": \"Unable to delete item, please see server console for more info.\"}";
         }
     }
 
-    public static void update(int transactionID, int accountID, int balanceChange, int categoryID, String description, String date, int standingOrderID){
-        try{
+    public static void update(int transactionID, int accountID, int balanceChange, int categoryID, String description, String date, int standingOrderID) {
+        try {
             PreparedStatement ps = main.db.prepareStatement("UPDATE Transactions SET AccountID = ?, BalanceChange = ?, CategoryID = ?, Description = ?, Date = ?, StandingOrderID = ? WHERE TransactionID = ?");
 
-            fillColumn(accountID, balanceChange, categoryID, description, date, standingOrderID, ps,0);
-            ps.setInt(7,transactionID);
+            fillColumn(accountID, balanceChange, categoryID, description, date, standingOrderID, ps, 0);
+            ps.setInt(7, transactionID);
 
             ps.executeUpdate();
 
-        } catch (Exception e){
+        } catch (Exception e) {
             out.println("Error updating user, error message:\n" + e.getMessage());
         }
     }
@@ -244,12 +303,34 @@ public class TransactionsController{
     /* removes the duplicate code of the data entry into the SQL statement for update() and add(), as there code was very similar */
     private static void fillColumn(int accountID, int balanceChange, int categoryID, String description, String date, int standingOrderID, PreparedStatement ps, int column) throws SQLException {
 
-        ps.setInt(1+column, accountID);
-        ps.setInt(2+column,balanceChange);
-        ps.setInt(3+column,categoryID);
-        ps.setString(4+column,description);
-        ps.setString(5+column,date);
-        ps.setInt(6+column,standingOrderID);
+        ps.setInt(1 + column, accountID);
+        ps.setInt(2 + column, balanceChange);
+        ps.setInt(3 + column, categoryID);
+        ps.setString(4 + column, description);
+        ps.setString(5 + column, date);
+        ps.setInt(6 + column, standingOrderID);
     }
 
+    //This function updates the balance of an account to reflect a transaction being created or editted
+    private static boolean changingBalance(int accountID, int accountChange) {
+        try {
+            //This gets the account balance for the account the transaction is relating to
+            PreparedStatement ps = main.db.prepareStatement("SELECT Balance FROM Accounts WHERE AccountID = ?");
+
+            ps.setInt(1, accountID); //The user with the specific account ID is searched for
+            ResultSet result = ps.executeQuery();
+
+            //This updates the account balance to reflect the transaction
+
+            PreparedStatement ps2 = main.db.prepareStatement("UPDATE Accounts SET Balance = ? WHERE AccountID = ?");
+            ps2.setInt(1, result.getInt(1) + accountChange);
+            ps2.setInt(2, accountID);
+            ps2.executeUpdate();
+
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+
+    }
 }
