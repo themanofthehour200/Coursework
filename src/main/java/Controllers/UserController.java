@@ -163,6 +163,8 @@ public class UserController {
                               @FormDataParam("email") String email, @FormDataParam("phoneNumber") String phoneNumber, @FormDataParam("password") String password){
 
         try{
+            out.println("/Users/new");
+
             PreparedStatement ps = main.db.prepareStatement("INSERT INTO Users (UserID, FirstName, Surname, DateOfBirth, Email, PhoneNumber, Password) VALUES (?,?,?,?,?,?,?)");
 
             /* This uses the varValid() methods in the 'main' class to ascertain if the inputs are in their valid formats or not. */
@@ -170,7 +172,6 @@ public class UserController {
                 throw new Exception("One or more of the form parameters are missing or in the wrong data format");
             }
 
-            out.println("/Users/new");
             ps.setString(1,null);//auto-increments the primary key
             fillColumn(firstName, surname, dateOfBirth, email, phoneNumber, password, ps, 1);
             ps.executeUpdate();
