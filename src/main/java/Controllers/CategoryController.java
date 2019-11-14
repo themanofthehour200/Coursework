@@ -111,19 +111,4 @@ public class CategoryController{
         }
     }
 
-
-    public static void update(int categoryID, String categoryName, int accessID){
-        try{
-            PreparedStatement ps = main.db.prepareStatement("UPDATE Categories SET CategoryName = ?, AccessID = ?  WHERE CategoryID = ?");
-
-            ps.setString(1,categoryName);
-            ps.setInt(2, accessID);
-            ps.setInt(3,categoryID);
-            ps.executeUpdate();
-
-        } catch (Exception e){
-            out.println("Error updating category, error message:\n" + e.getMessage());
-        }
-    }
-
 }

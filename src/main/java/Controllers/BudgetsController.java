@@ -1,7 +1,12 @@
 package Controllers;
 
 import Server.main;
+import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -10,102 +15,121 @@ import java.util.List;
 
 import static java.lang.System.out;
 
+@Path("Budgets/")
 public class BudgetsController{
 
-    //This is the method for selecting all rows in the table of Users
-    //This method is mainly just used for testing purposes, as this is easier than manually having to check the Accounts table after each applicable test
-    public static List selectAll(){
-        try{
-            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Budgets");
-            ResultSet result = ps.executeQuery();
+    @POST
+    @Path("new")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
 
-            int count = 0;
-            List<List<String>> output = new ArrayList<List<String>>(); //This is a List of ArrayLists. This is what is returned.
-            //An ArrayList is used instead of an array as it is mutatable and we don't know how many rows there are in the table
-
-            while(result.next()){
-                output.add(new ArrayList<String>());      //A new arraylist is created within the overall output List
-                output.get(count).add(Integer.toString(result.getInt(1)));      //The value is added in to the current ArrayList within output
-                output.get(count).add(Integer.toString(result.getInt(2)));
-                output.get(count).add(Integer.toString(result.getInt(3)));
-                output.get(count).add(Integer.toString(result.getInt(4)));
-                output.get(count).add(Integer.toString(result.getInt(5)));
-                output.get(count).add(Integer.toString(result.getInt(6)));
-                output.get(count).add(result.getString(7));
-                out.println(output.get(count)); //To be removed once testing phase one is done
-                count++;
-            }
-            return output;
-
-        } catch (Exception e){
-            out.println("Error reading database 'Budgets', error message:\n" + e.getMessage());
-            return null;
-        }
-    }
-
-    //This returns a specific accounts details, allowing the user to check their balance etc.
-    public static List search(int searchID, int userID){
-        try {
-            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Budgets WHERE BudgetID = ? OR UserID = ?");
-            ps.setInt(1,searchID); //The user with the specific account ID is searched for
-            ps.setInt(2,userID);
-            ResultSet result = ps.executeQuery();
-
-            ArrayList<String> output = new ArrayList<String>(1);
-            output.add(Integer.toString(result.getInt(1)));      //The value is added in to the current ArrayList within output
-            output.add(Integer.toString(result.getInt(2)));
-            output.add(Integer.toString(result.getInt(3)));
-            output.add(result.getString(result.getInt(4)));
-            output.add(result.getString(result.getInt(5)));
-            output.add(result.getString(result.getInt(6)));
-            output.add(result.getString(7));
-            out.println(output);
-            return output;
-
-        }
-        catch (Exception e){
-            out.println("Error searching database 'Budgets', error message:\n" + e.getMessage());
-            return null;
-        }
-
-    }
-
-    public static void insert(int userID, int categoryID, int amount, int balance, int duration, String dateStarted){
+    public String insert(@FormDataParam("userID") int userID, @FormDataParam("categoryID") int categoryID, @FormDataParam("amount") int amount,
+                         @FormDataParam("balance") int balance, @FormDataParam("duration") int duration, @FormDataParam("dateStarted") String dateStarted){
 
         try{
-            PreparedStatement ps = main.db.prepareStatement("INSERT INTO Budgets (BudgetID, UserID, CategoryID, Amount, Balance, Duration, DateStarted) VALUES (?,?,?,?,?,?,?)");
+            out.println("/Budgets/new");
 
-            ps.setString(1,null);
-            fillColumn(userID, categoryID, amount, balance, duration, dateStarted, ps,1);
-            ps.executeUpdate();
+            /*This prevents a user from creating multiple budgets that they have access to that have
+              the same names as each other*/
+            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Budgets WHERE UserID = ? AND CategoryID = ?");
+            ps.setInt(1,userID);
+            ps.setInt(2,categoryID);
+            ResultSet result = ps.executeQuery();
+            if(result.next()) throw new Exception("Cannot create duplicate budgets");
+
+            //Creates the new budget for the user
+            PreparedStatement ps2 = main.db.prepareStatement("INSERT INTO Budgets (BudgetID, UserID, CategoryID, Amount, Balance, Duration, DateStarted) VALUES (?,?,?,?,?,?,?)");
+
+            ps2.setString(1,null);//auto-increments the primary key
+            fillColumn(userID, categoryID, amount, balance, duration, dateStarted, ps2, 1);
+            ps2.executeUpdate();
+            return "{\"status\": \"OK\"}";
 
         } catch (Exception e){
             out.println("Error when inputting budget into database, error code\n" + e.getMessage());
+            return "{\"error\": \"Unable to create new item, please see server console for more info.\"}";
         }
     }
 
-    public static void delete(int searchID){
+    @POST
+    @Path("delete")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String delete(@FormDataParam("budgetID") Integer searchID){
         try{
-            PreparedStatement ps = main.db.prepareStatement("DELETE FROM Budgets WHERE BudgetID = ?");
+            if (searchID == null) throw new Exception("One or more form data parameters are missing in the HTTP request.");
+
+            out.println("Budgets/delete id = " + searchID);
+
+            PreparedStatement ps = main.db.prepareStatement("DELETE FROM Budgets WHERE UserID = ?");
             ps.setInt(1,searchID);
             ps.execute();
 
-            out.println("Budget number " + searchID + " was deleted successfully");
+            return "{\"status\": \"OK\"}";
 
         } catch (Exception e){
             out.println("Error deleting budget, error message:\n" + e.getMessage());
+            return "{\"error\": \"Unable to delete item, please see server console for more info.\"}";
         }
     }
 
-    public static void update(int budgetID,int userID, int categoryID, int amount, int balance, int duration, String dateStarted){
+
+    @POST
+    @Path("edit")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String update(@FormDataParam("budgetID") int budgetID, @FormDataParam("userID") int userID, @FormDataParam("categoryID") int categoryID, @FormDataParam("amount") int amount,
+                         @FormDataParam("balance") int balance, @FormDataParam("duration") int duration, @FormDataParam("dateStarted") String dateStarted){
         try{
+
+            System.out.println("Budgets/edit id = " + budgetID);
+
             PreparedStatement ps = main.db.prepareStatement("UPDATE Budgets SET UserID = ?, CategoryID = ?, Amount = ?, Balance = ?, Duration = ?, DateStarted = ? WHERE BudgetID = ?");
             fillColumn(userID, categoryID, amount, balance, duration, dateStarted, ps,0);
-            ps.setInt(7, budgetID);
+            ps.setInt(7,budgetID);
             ps.executeUpdate();
+            return "{\"status\": \"OK\"}";
 
         } catch (Exception e){
-            out.println("Error updating budget, error message:\n" + e.getMessage());
+            out.println("Error updating user, error message:\n" + e.getMessage());
+            return "{\"error\": \"Unable to update item, please see server console for more info.\"}";
+        }
+    }
+
+
+    //This method returns all categories available to the user
+    @GET
+    @Path("list/{userID}")
+    @Produces(MediaType.APPLICATION_JSON)
+
+    //This returns a specific user's details
+    public String search(@PathParam("userID") Integer searchID){
+        System.out.println("Budgets/list/" + searchID);
+
+        try{
+            if (searchID == null) throw new Exception("No user exists");
+            JSONArray list = new JSONArray();
+
+            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Budgets WHERE UserID = ?");
+            ps.setInt(1,searchID);
+            ResultSet result = ps.executeQuery();
+
+            while(result.next()){
+                JSONObject item = new JSONObject();
+                item.put("BudgetID", result.getInt(1));
+                item.put("UserID", result.getInt(2));
+                item.put("CategoryID", result.getInt(3));
+                item.put("Amount", result.getInt(4));
+                item.put("Balance", result.getInt(5));
+                item.put("Duration", result.getInt(6));
+                item.put("DateStarted", result.getString(7));
+                list.add(item);
+            }
+            return list.toString();
+
+        } catch (Exception e){
+            System.out.println("Database error: " + e.getMessage());
+            return "{\"error\": \"Unable to list items, please see server console for more info.\"}";
         }
     }
 
