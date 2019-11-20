@@ -23,6 +23,7 @@ public class TransactionsController {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
 
+    //This creates a new transaction
     public String insert(@FormDataParam("categoryID") int categoryID, @FormDataParam("date") String date, @FormDataParam("accountID") int accountID, @FormDataParam("balanceChange") int balanceChange,
                          @FormDataParam("description") String description, @FormDataParam("standingOrderID") int standingOrderID) {
 
@@ -60,8 +61,8 @@ public class TransactionsController {
     @Path("view/{id}")
     @Produces(MediaType.APPLICATION_JSON)
 
-    //This returns a specific user's details
-    public String search(@PathParam("id") Integer searchID) {
+    //This returns the details of all transactions done on all of a user's accounts
+    public String view(@PathParam("id") Integer searchID) {
         try {
             if (searchID == null) {
                 throw new Exception("Thing's 'id' is missing in the HTTP request's URL.");
@@ -70,7 +71,8 @@ public class TransactionsController {
             System.out.println("Transactions/view/" + searchID);
             JSONArray list = new JSONArray();
 
-
+            /*This SQL statement returns all of the details of the transactions,
+            as well as some of the details of the user who is viewing the transactions */
             PreparedStatement ps = main.db.prepareStatement("SELECT Transactions.*, Accounts.AccountName FROM Transactions " +
                     "INNER JOIN Accounts ON Accounts.AccountID = Transactions.AccountID" +
                     " JOIN AccountManagers ON AccountManagers.AccountID = Transactions.AccountID " +
@@ -105,12 +107,14 @@ public class TransactionsController {
     @Path("search")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)//Jersey turns this into an HTTP request handler
+    //This method allows a user to search for a previous transaction based on criteria
     public String search(@FormDataParam("categoryID") int categoryID, @FormDataParam("date") String date, @FormDataParam("accountID") int accountID) {
 
         System.out.println("Transactions/search");
         JSONArray list = new JSONArray();
 
         try {
+            //Select it for the account and for any details that the user has entered
             PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Transactions WHERE AccountID = ? AND Date = ? OR CategoryID = ?");
             ps.setInt(1, accountID);
             ps.setString(2, date);
@@ -144,6 +148,7 @@ public class TransactionsController {
     @Path("edit")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
+    //This method edits a previous tranaction and updates the account's balance to reflect this
     public String update(@FormDataParam("transactionID") int transactionID, @FormDataParam("categoryID") int categoryID, @FormDataParam("date") String date,
                          @FormDataParam("accountID") int accountID, @FormDataParam("balanceChange") int balanceChange,
                          @FormDataParam("description") String description, @FormDataParam("standingOrderID") int standingOrderID) {
@@ -178,7 +183,7 @@ public class TransactionsController {
         }
     }
 
-    //Deletes an exisitng transaction
+    //Deletes an existing transaction
     @POST
     @Path("delete")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -218,7 +223,9 @@ public class TransactionsController {
         }
     }
 
-    /* removes the duplicate code of the data entry into the SQL statement for update() and add(), as there code was very similar */
+    /*This method is used to efficiently fill the ps,
+    as many API paths have nearly identical code within the class
+    when filling in prepared statement*/
     private static void fillColumn(int accountID, int balanceChange, int categoryID, String description, String date, int standingOrderID, PreparedStatement ps, int column) throws SQLException {
 
         ps.setInt(1 + column, accountID);
@@ -229,7 +236,9 @@ public class TransactionsController {
         ps.setInt(6 + column, standingOrderID);
     }
 
-    /*This function updates the balance of an account to reflect a transaction being created or edited*/
+    /*This function updates the balance of an account to reflect a transaction being created or edited
+    * This is in a separate method to reduce duplicate code, as both new transactions and
+    * editing previous transactions use this code*/
     private static boolean changingBalance(int accountID, int accountChange) {
         try {
             //This gets the account balance for the account the transaction is relating to

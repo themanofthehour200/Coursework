@@ -55,9 +55,11 @@ public class BudgetsController{
     @Path("delete")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
+    //This method is used to delete a budget
     public String delete(@FormDataParam("budgetID") Integer searchID){
         try{
-            if (searchID == null) throw new Exception("One or more form data parameters are missing in the HTTP request.");
+            //Error is thrown if budgetID isn't present
+            if (searchID == null) throw new Exception("Search ID is invalid in HTTP request");
 
             out.println("Budgets/delete id = " + searchID);
 
@@ -78,14 +80,16 @@ public class BudgetsController{
     @Path("edit")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
+    //This method updates an already created budget
     public String update(@FormDataParam("budgetID") int budgetID, @FormDataParam("userID") int userID, @FormDataParam("categoryID") int categoryID, @FormDataParam("amount") int amount,
                          @FormDataParam("balance") int balance, @FormDataParam("duration") int duration, @FormDataParam("dateStarted") String dateStarted){
         try{
 
             System.out.println("Budgets/edit id = " + budgetID);
 
+
             PreparedStatement ps = main.db.prepareStatement("UPDATE Budgets SET UserID = ?, CategoryID = ?, Amount = ?, Balance = ?, Duration = ?, DateStarted = ? WHERE BudgetID = ?");
-            fillColumn(userID, categoryID, amount, balance, duration, dateStarted, ps,0);
+            fillColumn(userID, categoryID, amount, balance, duration, dateStarted, ps,0);//Fills in the ps
             ps.setInt(7,budgetID);
             ps.executeUpdate();
             return "{\"status\": \"OK\"}";
@@ -133,7 +137,9 @@ public class BudgetsController{
         }
     }
 
-    /* removes the duplicate code of the data entry into the SQL statement for update() and add(), as there code was very similar */
+    /*This method is used to efficiently fill the ps,
+    as many API paths have nearly identical code within the class
+    when filling in prepared statement*/
     private static void fillColumn(int userID, int categoryID, int amount, int balance, int duration, String dateStarted, PreparedStatement ps,int column) throws SQLException {
         ps.setInt(1+column, userID);
         ps.setInt(2+column, categoryID);

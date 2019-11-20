@@ -147,7 +147,11 @@ public class AccountController {
         }
     }
 
+    /*This method is used to efficiently fill the ps,
+    as many API paths have nearly identical code within the class
+    when filling in prepared statement*/
     private static void fillColumn(String accountName, int balance, String currency, PreparedStatement ps, int column) throws SQLException {
+        //Column refers to which column number these variables should be filled in to, as it varies a little method by method
         ps.setString(1+column, accountName);
         ps.setInt(2+column, balance);
         ps.setString(3+column, currency);

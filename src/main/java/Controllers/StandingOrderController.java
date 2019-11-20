@@ -18,18 +18,17 @@ import static java.lang.System.out;
 @Path("StandingOrders/")
 public class StandingOrderController{
 
-    //This is the method for selecting all rows in the table of Users
-    //This method is mainly just used for testing purposes, as this is easier than manually having to check the Accounts table after each applicable test
-    //This method returns all budgets available to the user
+
     @GET
     @Path("list/{accountID}")
     @Produces(MediaType.APPLICATION_JSON)
 
-    //This returns a specific user's details
+    //This method returns all StandingOrders that relate to an account
     public String search(@PathParam("accountID") Integer searchID){
         System.out.println("StandingOrders/list/" + searchID);
 
         try{
+            //Error is thrown if accountID not entered
             if (searchID == null) throw new Exception("No account exists");
             JSONArray list = new JSONArray();
 
@@ -47,7 +46,7 @@ public class StandingOrderController{
                 item.put("LastPaid", result.getInt(6));
                 list.add(item);
             }
-            return list.toString();
+            return list.toString();//Returns all of the details of the Standing Orders
 
         } catch (Exception e){
             System.out.println("Database error: " + e.getMessage());
@@ -56,53 +55,43 @@ public class StandingOrderController{
     }
 
 
-//This creates a new standing order for the client's account
+
     @POST
     @Path("new")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
 
+    //This creates a new standing order for the client's account
     public String insert(@FormDataParam("accountID") int accountID, @FormDataParam("categoryID") int categoryID, @FormDataParam("amount") int amount,
                          @FormDataParam("duration") int duration, @FormDataParam("lastPaid") String lastPaid){
 
         try{
             out.println("/StandingOrders/new");
 
+            //The amount of days must be a positive integer as the standing order can only happen at most once per day
             if(duration<=0) throw new Exception("Input duration invalid");
 
             //Creates the new StandingOrder for the user
             PreparedStatement ps = main.db.prepareStatement("INSERT INTO StandingOrders (OrderID, AccountID, CategoryID, Amount, Duration, LastPaid) VALUES (?,?,?,?,?,?)");
 
             ps.setString(1,null);//auto-increments the primary key
-            fillColumn(accountID, categoryID, amount, duration, lastPaid, ps, 1);
+            fillColumn(accountID, categoryID, amount, duration, lastPaid, ps, 1);//fills in the ps
             ps.executeUpdate();
             return "{\"status\": \"OK\"}";
 
         } catch (Exception e){
-            out.println("Error when inputting budget into database, error code\n" + e.getMessage());
+            out.println("Error when inputting standing order into database, error code\n" + e.getMessage());
             return "{\"error\": \"Unable to create new item, please see server console for more info.\"}";
         }
     }
 
 
 
-    public static void delete(int searchID){
-        try{
-            PreparedStatement ps = main.db.prepareStatement("DELETE FROM StandingOrders WHERE OrderID = ?");
-            ps.setInt(1,searchID);
-            ps.execute();
-
-            out.println("Order number " + searchID + " was deleted successfully");
-
-        } catch (Exception e){
-            out.println("Error deleting order, error message:\n" + e.getMessage());
-        }
-    }
-
     @POST
     @Path("edit")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
+    //This method edits an existing standing order which will affect future iterations of it.
     public String update(@FormDataParam("orderID") int orderID, @FormDataParam("accountID") int accountID, @FormDataParam("categoryID") int categoryID, @FormDataParam("amount") int amount,
                          @FormDataParam("duration") int duration, @FormDataParam("lastPaid") String lastPaid){
         try{
@@ -121,7 +110,9 @@ public class StandingOrderController{
         }
     }
 
-    /* removes the duplicate code of the data entry into the SQL statement for update() and add(), as there code was very similar */
+    /*This method is used to efficiently fill the ps,
+    as many API paths have nearly identical code within the class
+    when filling in prepared statement*/
     private static void fillColumn(int accountID, int categoryID, int amount, int duration, String lastPaid, PreparedStatement ps,int column) throws SQLException {
         ps.setInt(1+column, accountID);//Done as column numbers are one off in difference between update and insert SQL statements
         ps.setInt(2+column, categoryID);

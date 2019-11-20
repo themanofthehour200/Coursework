@@ -15,7 +15,7 @@ import java.util.List;
 
 import static java.lang.System.out;
 
-@Path("AccountManagers/")
+@Path("AccountManagers/")//Sets the path for the class
 public class AccountManagersController{
 
     //This method returns all the managers for an account
@@ -27,13 +27,17 @@ public class AccountManagersController{
         System.out.println("AccountManagers/list/" + searchID);
 
         try{
+            //This throws an error if the accountID entered doesn't match an existing accounts
             if (searchID == null) throw new Exception("No account exists");
+
             JSONArray list = new JSONArray();
 
+            //This returns all of the details for who can manage an account
             PreparedStatement ps = main.db.prepareStatement("SELECT * FROM AccountManagers WHERE AccountID = ?");
             ps.setInt(1,searchID);
             ResultSet result = ps.executeQuery();
 
+            //For however many rows the results are added
             while(result.next()){
                 JSONObject item = new JSONObject();
                 item.put("ControlID", result.getInt(1));
@@ -55,6 +59,7 @@ public class AccountManagersController{
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
 
+    //This method is used to add another user as a manager on an existing account
     public String insert(@FormDataParam("accountID") int accountID, @FormDataParam("managerID") int managerID, @FormDataParam("AccessLevel") int accessLevel){
 
         try{
@@ -65,14 +70,15 @@ public class AccountManagersController{
             ps.setInt(1,accountID);
             ps.setInt(2,managerID);
             ResultSet result = ps.executeQuery();
+
+            //Throws an error if the user is already set up as a manager on the account
             if(result.next()) throw new Exception("User is already a manager");
 
-            //Preparing to insert the new manager into the database
+            //Inserting the new manager into the database
             PreparedStatement ps2 = main.db.prepareStatement("INSERT INTO AccountManagers (ControlID, AccountID, ManagerID, AccessLevel) VALUES (?,?,?,?)");
 
-
             ps2.setString(1,null);//auto-increments the primary key
-            fillColumn(accountID,managerID,accessLevel,ps2,1);
+            fillColumn(accountID,managerID,accessLevel,ps2,1);//fills the ps
             ps2.executeUpdate();
             return "{\"status\": \"OK\"}";
 
@@ -87,6 +93,8 @@ public class AccountManagersController{
     @Path("edit")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
+    //This method is used to update the access level of an existing manager on an account
+    //The client's access level should be chked before this happens.
     public String update(@FormDataParam("controlID") int controlID, @FormDataParam("accountID") int accountID, @FormDataParam("managerID") int managerID, @FormDataParam("AccessLevel") int accessLevel){
         try{
 
@@ -110,6 +118,9 @@ public class AccountManagersController{
       path name is that the form is more secure*/
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
+    /*This method removes an manager from an account. In phase 3 this method should only be called
+    *once the AccessLevel of the user has been checked, as only manager with access level 3
+    * can remove other managers from the account*/
     public String delete(@FormDataParam("controlID") Integer searchID){
         try{
             //This throws when there has been no controlID entered
@@ -129,9 +140,9 @@ public class AccountManagersController{
         }
     }
 
-
-
-    /* removes the duplicate code of the data entry into the SQL statement for update() and add(), as there code was very similar */
+    /*This method is used to efficiently fill the ps,
+    as many API paths have nearly identical code within the class
+    when filling in prepared statement*/
     private static void fillColumn(int accountID, int managerID, int accessLevel, PreparedStatement ps, int column) throws SQLException {
         ps.setInt(1+column, accountID);
         ps.setInt(2+column, managerID);

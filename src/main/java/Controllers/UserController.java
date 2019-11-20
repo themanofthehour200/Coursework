@@ -40,6 +40,7 @@ public class UserController {
             return "{\"error\": \"Unable to list items, please see server console for more info.\"}";
         }
     }
+
 //This is the method for logging in
     @POST
     @Path("login")
@@ -78,9 +79,9 @@ public class UserController {
         }
     }
 
-    //This is the method for selecting all rows in the table of Users
-    //This method is mainly just used for testing purposes, as this is easier than manually having to check the Accounts table after each applicable test
-
+/*    This is the method for selecting all rows in the table of Users
+    This method is mainly just used for testing purposes, as this is easier than
+    manually having to check the Accounts table after each applicable test*/
     @GET
     @Path("list")
     @Produces(MediaType.APPLICATION_JSON)//Jersey turns this into an HTTP request handler
@@ -159,6 +160,7 @@ public class UserController {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
 
+    //This method is for new users who are being added to te database
     public String insert(@FormDataParam("firstName") String firstName, @FormDataParam("surname") String surname, @FormDataParam("dateOfBirth") String dateOfBirth,
                               @FormDataParam("email") String email, @FormDataParam("phoneNumber") String phoneNumber, @FormDataParam("password") String password){
 
@@ -187,12 +189,15 @@ public class UserController {
     @Path("delete")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
+
+    //Deletes an existing user
     public String delete(@FormDataParam("userID") Integer searchID){
         try{
             if (searchID == null) throw new Exception("One or more form data parameters are missing in the HTTP request.");
 
             out.println("Users/delete " + searchID);
 
+            //This will CASCADE DELETE all other records associated with the user
             PreparedStatement ps = main.db.prepareStatement("DELETE FROM Users WHERE UserID = ?");
             ps.setInt(1,searchID);
             ps.execute();
@@ -209,6 +214,7 @@ public class UserController {
     @Path("edit")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
+    //This method is used to update the details of an existing user
     public String update(@FormDataParam("userID") int userID, @FormDataParam("firstName") String firstName, @FormDataParam("surname") String surname, @FormDataParam("dateOfBirth") String dateOfBirth,
                          @FormDataParam("email") String email, @FormDataParam("phoneNumber") String phoneNumber, @FormDataParam("password") String password){
         try{
@@ -231,7 +237,9 @@ public class UserController {
         }
     }
 
-    /* removes the duplicate code of the data entry into the SQL statement for update() and add(), as there code was very similar */
+    /*This method is used to efficiently fill the ps,
+    as many API paths have nearly identical code within the class
+    when filling in prepared statement*/
     private static void fillColumn(String firstName,String surname, String dateOfBirth, String email, String phoneNumber, String password, PreparedStatement ps, int column) throws SQLException {
         ps.setString(1+column,firstName);//column is needed as the column numbers are slightly different between
         ps.setString(2+column,surname);//the insert method and the update method

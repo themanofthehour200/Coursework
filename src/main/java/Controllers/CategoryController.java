@@ -22,7 +22,9 @@ public class CategoryController{
     @Path("list/{userID}")
     @Produces(MediaType.APPLICATION_JSON)
 
-    //This returns a specific user's details
+    /*This returns all categories that are available to the user,
+    including user-made categories and the default 10 categories*/
+
     public String search(@PathParam("userID") Integer searchID){
         System.out.println("Categories/list/" + searchID);
 
@@ -30,6 +32,7 @@ public class CategoryController{
             if (searchID == null) throw new Exception("No user exists");
             JSONArray list = new JSONArray();
 
+            //Categories with AccessID = 0 are the default categories and so are also returned
             PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Categories WHERE AccessID = 0 OR AccessID = ?");
             ps.setInt(1,searchID);
             ResultSet result = ps.executeQuery();
