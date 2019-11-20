@@ -71,7 +71,10 @@ public class TransactionsController {
             JSONArray list = new JSONArray();
 
 
-            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Transactions WHERE AccountID = ?");
+            PreparedStatement ps = main.db.prepareStatement("SELECT Transactions.*, Accounts.AccountName FROM Transactions " +
+                    "INNER JOIN Accounts ON Accounts.AccountID = Transactions.AccountID" +
+                    " JOIN AccountManagers ON AccountManagers.AccountID = Transactions.AccountID " +
+                    " JOIN Users ON Users.UserID = AccountManagers.ManagerID AND Users.UserID=?");
 
             ps.setInt(1, searchID); //The user with the specific account ID is searched for
 
@@ -86,6 +89,7 @@ public class TransactionsController {
                 item.put("Description", result.getString(5));
                 item.put("Date", result.getString(6));
                 item.put("StandingOrderID", result.getInt(7));
+                item.put("AccountName",result.getString(8));
                 list.add(item);
             }
             return list.toString();

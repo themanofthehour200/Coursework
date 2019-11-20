@@ -23,7 +23,7 @@ public class AccountController {
     public String viewAll(@FormDataParam("userID") int userID) {
         JSONArray list = new JSONArray();
         try{
-        PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Accounts INNER JOIN AccountManagers AM on Accounts.AccountID = AM.AccountID AND AM.ManagerID = ?");
+        PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Accounts INNER JOIN AccountManagers AM ON Accounts.AccountID = AM.AccountID AND AM.ManagerID = ?");
         ps.setInt(1,userID);
 
         ResultSet result = ps.executeQuery();
