@@ -10,8 +10,6 @@ import javax.ws.rs.core.MediaType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 import static java.lang.System.out;
 
@@ -110,6 +108,31 @@ public class StandingOrderController{
         }
     }
 
+    @POST
+    @Path("delete")
+    /*The reason that this uses form data instead of having the data be sent via the API path in the
+      path name is that the form is more secure*/
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String delete(@FormDataParam("orderID") Integer searchID){
+        try{
+            //This throws when there has been no categoryID entered
+            if (searchID == null) throw new Exception("One or more form data parameters are missing in the HTTP request.");
+
+            out.println("StandingOrders/delete id = " + searchID);
+
+            PreparedStatement ps = main.db.prepareStatement("DELETE FROM StandingOrders WHERE OrderID = ?");
+            ps.setInt(1,searchID);
+            ps.execute();
+
+            return "{\"status\": \"OK\"}";
+
+        } catch (Exception e){
+            out.println("Error deleting Standing Order, error message:\n" + e.getMessage());
+            return "{\"error\": \"Unable to delete item, please see server console for more info.\"}";
+        }
+    }
+    
     /*This method is used to efficiently fill the ps,
     as many API paths have nearly identical code within the class
     when filling in prepared statement*/
