@@ -147,6 +147,31 @@ public class AccountController {
         }
     }
 
+    @POST
+    @Path("delete")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+
+    //Deletes an existing account
+    public String delete(@FormDataParam("accountID") Integer searchID){
+        try{
+            if (searchID == null) throw new Exception("One or more form data parameters are missing in the HTTP request.");
+
+            out.println("Accounts/delete " + searchID);
+
+            //This will CASCADE DELETE all other records associated with the account
+            PreparedStatement ps = main.db.prepareStatement("DELETE FROM Accounts WHERE AccountID = ?");
+            ps.setInt(1,searchID);
+            ps.execute();
+
+            return "{\"status\": \"OK\"}";
+
+        } catch (Exception e){
+            out.println("Error deleting user, error message:\n" + e.getMessage());
+            return "{\"error\": \"Unable to delete item, please see server console for more info.\"}";
+        }
+    }
+
     /*This method is used to efficiently fill the ps,
     as many API paths have nearly identical code within the class
     when filling in prepared statement*/
