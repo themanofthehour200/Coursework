@@ -72,9 +72,9 @@ public class TransactionsController {
             /*This SQL statement returns all of the details of the transactions,
             as well as some of the details of the user who is viewing the transactions */
             PreparedStatement ps = main.db.prepareStatement("SELECT Transactions.*, Accounts.AccountName FROM Transactions " +
-                    "INNER JOIN Accounts ON Accounts.AccountID = Transactions.AccountID" +
-                    " JOIN AccountManagers ON AccountManagers.AccountID = Transactions.AccountID " +
-                    " JOIN Users ON Users.UserID = AccountManagers.ManagerID AND Users.UserID=?");
+                    "INNER JOIN Accounts ON Accounts.AccountID = Transactions.AccountID" + /*Gets the transactions for the specified account*/
+                    " JOIN AccountManagers ON AccountManagers.AccountID = Transactions.AccountID" + /*Gets the account managers for the account*/
+                    " JOIN Users ON Users.UserID = AccountManagers.ManagerID AND Users.UserID=?"); /*Gets the name of the account manager*/
 
             ps.setInt(1, searchID); //The user with the specific account ID is searched for
 
@@ -105,23 +105,17 @@ public class TransactionsController {
     @Path("search")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)//Jersey turns this into an HTTP request handler
-    //This method allows a user to search for a previous transaction based on criteria
-    public String search(@FormDataParam("categoryID") int categoryID, @FormDataParam("date") String date, @FormDataParam("accountID") int accountID) {
+    //This method returns the details of a specific transaction.
+    public String search(@FormDataParam("transactionID") int transactionID) {
 
         System.out.println("Transactions/search");
-        JSONArray list = new JSONArray();
 
         try {
-            //Select it for the account and for any details that the user has entered
-            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Transactions WHERE AccountID = ? AND Date = ? OR CategoryID = ?");
-            ps.setInt(1, accountID);
-            ps.setString(2, date);
-            ps.setInt(3, categoryID);
+            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Transactions WHERE TransactionID = ?");
+            ps.setInt(1, transactionID);
             ResultSet result = ps.executeQuery();
 
-            boolean added = false;//This determines whether any transactions with the search criteria have been found
-            while (result.next()) {
-                added = true;
+            if (result.next()) {
                 JSONObject item = new JSONObject();
                 item.put("TransactionID", result.getInt(1));
                 item.put("AccountID", result.getInt(2));
@@ -130,9 +124,8 @@ public class TransactionsController {
                 item.put("Description", result.getString(5));
                 item.put("Date", result.getString(6));
                 item.put("StandingOrderID", result.getInt(7));
-                list.add(item);
+                return item.toString(); //If a transaction found then return it
             }
-            if (added) return list.toString(); //If transactions found then return them
             else
                 throw new Exception("No transactions with search criteria found"); //if none have been found then give an error
 

@@ -16,6 +16,7 @@ import static java.lang.System.out;
 
 @Path("Accounts/")//Sets the Path for all API calls in this class
 public class AccountController {
+
     @POST
     @Path("viewAll")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -40,11 +41,48 @@ public class AccountController {
         }
         return list.toString();
 
-    } catch(Exception e) {
-        System.out.println("Database error: " + e.getMessage());
-        return "{\"error\": \"Unable to list items, please see server console for more info.\"}";
+        } catch(Exception e) {
+            System.out.println("Database error: " + e.getMessage());
+            return "{\"error\": \"Unable to list items, please see server console for more info.\"}";
+        }
     }
-}
+
+    @GET
+    @Path("search/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+
+    //This returns a specific account's details
+    public String search(@PathParam("id") Integer searchID){
+        try {
+            if (searchID == null) {
+                throw new Exception("Thing's 'id' is missing in the HTTP request's URL.");
+            }
+
+            System.out.println("Accounts/search/" + searchID);
+            JSONObject item = new JSONObject();
+
+            PreparedStatement ps = main.db.prepareStatement("SELECT AccountID, AccountName, Balance, Currency FROM Accounts WHERE AccountID = ?");
+
+            ps.setInt(1,searchID); //The user with the specific account ID is searched for
+
+            ResultSet result = ps.executeQuery();
+
+            if (result.next()) {
+                item.put("AccountID", searchID);
+                item.put("AccountName", result.getString(2));
+                item.put("Balance", result.getInt(3));
+                item.put("Currency", result.getString(4));
+                return item.toString();
+            } else{
+                throw new Exception("User doesn't exist");
+            }
+        }
+
+        catch (Exception e){
+            out.println("Error searching database 'Users', error message:\n" + e.getMessage());
+            return "{\"error\": \"Unable to get item, please see server console for more info.\"}";
+        }
+    }
 
 
     @POST

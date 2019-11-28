@@ -1,6 +1,7 @@
 package Controllers;
 
 import Server.main;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -12,7 +13,6 @@ import java.sql.SQLException;
 import java.util.UUID;
 
 import static java.lang.System.out;
-import org.glassfish.jersey.media.multipart.FormDataParam;
 
 @Path("Users/")
 public class UserController {
@@ -146,12 +146,10 @@ public class UserController {
             } else{
                 throw new Exception("User doesn't exist");
             }
-
         }
         catch (Exception e){
             out.println("Error searching database 'Users', error message:\n" + e.getMessage());
             return "{\"error\": \"Unable to get item, please see server console for more info.\"}";
-
         }
     }
 
