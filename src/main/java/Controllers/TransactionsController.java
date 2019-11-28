@@ -139,7 +139,7 @@ public class TransactionsController {
     @Path("edit")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    //This method edits a previous tranaction and updates the account's balance to reflect this
+    //This method edits a previous transaction and updates the account's balance to reflect this
     public String update(@FormDataParam("transactionID") int transactionID, @FormDataParam("categoryID") int categoryID, @FormDataParam("date") String date,
                          @FormDataParam("accountID") int accountID, @FormDataParam("balanceChange") int balanceChange,
                          @FormDataParam("description") String description, @FormDataParam("standingOrderID") int standingOrderID) {
