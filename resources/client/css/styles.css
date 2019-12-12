@@ -8,6 +8,31 @@ h1 {
     margin-top:0;
 }
 
+loginDiv {
+    font-size: 14pt;
+    margin-top: 40px;
+    margin-left: 20px;
+}
+
+#password{
+    margin-left: 29px;
+    font-size: 14pt;
+}
+
+#username{
+    margin-left: 25px;
+    font-size: 14pt;
+}
+
+#loginButton {
+    width: 200px;
+    background-color: cornflowerblue;
+}
+
+#loginButton:hover {
+    background-color: dodgerblue;
+}
+
 #content {
     background-color: white;
     width: 1000px;
@@ -16,3 +41,10 @@ h1 {
     padding: 32px;
 }
 
+#loginButton{
+    color: black;
+    font-size: 14px;
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
+}
