@@ -8,6 +8,8 @@ function pageLoad() {
     }
 
     function login(event) {
+        //debugger;
+        console.log("login function");
 
         event.preventDefault(); //cancels the event if it is cancelable, meaning that the default action that belongs to the event will not occur.
 
@@ -21,7 +23,7 @@ function pageLoad() {
                 alert(responseData.error);
             } else {
                 Cookies.set("UserID", responseData.UserID);
-                Cookies.set("token", responseData.token);
+                Cookies.set("Token", responseData.Token);
                 window.location.href = '/client/index.html';
             }
         });

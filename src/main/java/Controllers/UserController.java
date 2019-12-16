@@ -59,7 +59,7 @@ public class UserController {
             if (result.next()) { //If user has correct log-in details
                 item.put("UserID", result.getInt(1));
                 String token = UUID.randomUUID().toString();//generates log-in token to be made into a cookie by the client
-                item.put("token",token);
+                item.put("Token",token);
 
                 out.println("Logged in successfully");
 
