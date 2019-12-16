@@ -26,7 +26,7 @@ label{
 loginDiv {
     background-color: lightblue;
     text-align: center;
-    font-size: 18pt;
+    font-size: 32pt;
     margin-top: 40px;
     margin-left: 20px;
 }
@@ -39,16 +39,20 @@ loginDiv {
 
 #email{
     text-align: left;
-    margin-left: 10px;
+    margin-left: 20px;
     font-size: 32pt;
 }
 
 #loginButton {
-    font-size: 18px;
+    font-size: 32px;
     text-align: center;
     width: 200px;
-    height: 230px;
+    height: 100px;
+    color: black;
     background-color: lightgreen;
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
 }
 
 #loginButton:hover {
@@ -62,12 +66,4 @@ loginDiv {
     margin: 0 auto;
     min-height: 600px;
     padding: 32px;
-}
-
-#loginButton{
-    color: black;
-    font-size: 14px;
-    border: none;
-    padding: 8px;
-    border-radius: 8px;
 }
