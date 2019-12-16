@@ -24,7 +24,7 @@ function pageLoad() {
             } else {
                 Cookies.set("UserID", responseData.UserID);
                 Cookies.set("Token", responseData.Token);
-                window.location.href = '/client/index.html';
+                window.location.href = '/client/Accounts.html';
             }
         });
     }

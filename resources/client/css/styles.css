@@ -67,3 +67,20 @@ loginDiv {
     min-height: 600px;
     padding: 32px;
 }
+
+#addInfo {
+    text-align: left;
+    background-color: lightblue;
+    width: 500px;
+    margin: 0 auto;
+    min-height: 600px;
+    padding: 32px;
+}
+#passForget{
+    width: 35px;
+    text-align: left;
+}
+
+#newAcc{
+    text-align: right;
+}
