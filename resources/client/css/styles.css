@@ -76,11 +76,3 @@ loginDiv {
     min-height: 600px;
     padding: 32px;
 }
-#passForget{
-    width: 35px;
-    text-align: left;
-}
-
-#newAcc{
-    text-align: right;
-}

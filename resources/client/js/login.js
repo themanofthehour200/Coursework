@@ -29,6 +29,7 @@ function pageLoad() {
         });
     }
 
+
     function logout() {
 
         fetch("/user/logout", {method: 'post'}
@@ -49,4 +50,3 @@ function pageLoad() {
         });
     }
 }
-
