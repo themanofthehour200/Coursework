@@ -1,7 +1,5 @@
 function pageLoad() {
 
-
-
     document.getElementById("signupButton").addEventListener("click", signup);
 
     function signup(event){

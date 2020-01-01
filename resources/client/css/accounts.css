@@ -10,9 +10,44 @@ h1{
 
 #content {
     background-color: lightblue;
-    width: 1000px;
+    width: 100%;
     margin: 0 auto;
     min-height: 600px;
     padding: 10px;
     text-align: center;
+}
+
+#navigation li {
+    list-style: none;
+    display: block;
+    float: left;
+    margin: 1em;
+}
+
+#navigation li a {
+    text-shadow: 0 2px 1px rgba(0,0,0,0.5);
+    display: block;
+    text-decoration: none;
+    color: #f0f0f0;
+    font-size: 1.6em;
+    margin: 0 .5em;
+}
+
+#navigation li a:hover {
+    margin-top: 2px;
+}
+
+#navigation_container {
+    margin: 0 auto;
+    width: 1250px;
+}
+
+.rectangle {
+    background: #e5592e;
+    height: 62px;
+    position: relative;
+    box-shadow: 0px 0px 4px rgba(0,0,0,0.55);
+    border-radius: 3px;
+    z-index: 500; /* the stack order: foreground */
+    margin: 3em 0;
 }
