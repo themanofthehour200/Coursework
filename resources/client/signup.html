@@ -11,15 +11,59 @@
 
 <body onload = pageLoad()>
 
+
 <div id="content">
     <h1>Sign Up</h1>
     <hr />
     <form id="signupForm">
-        <div id = "container"></div>
+        <div class="signupDiv">
+            <label for= "firstName">First Name: </label>
+            <input type="text" name="firstName" id="firstName" class="signupInput">
+        </div>
+
+        <div class="signupDiv">
+            <label for= "surname">Surname: </label>
+            <input type="text" name="surname" id="surname" class="signupInput">
+        </div>
+
+        <div class="signupDiv">
+            <label for= "dateOfBirth">Date of Birth: </label>
+            <input type="date" name="dateOfBirth" id="dateOfBirth" class="signupInput">
+        </div>
+
+        <div class="signupDiv">
+            <label for= "email">Email: </label>
+            <input type="text" name="email" id="email" class="signupInput">
+        </div>
+
+        <div class="signupDiv">
+            <label for= "phoneNumber">Phone Number: </label>
+            <input type="text" name="phoneNumber" id="phoneNumber" class="signupInput">
+        </div>
+
+        <div class="signupDiv">
+            <label for= "password">Password: </label>
+            <input type="password" name="password" id="password" class="signupInput">
+        </div>
+
+        <div class="signupDiv">
+            <label for= "passDuplicate">Confirm Password: </label>
+            <input type="password" name="passDuplicate" id="passDuplicate" class="signupInput">
+        </div>
+
+        <br>
+
         <div class="signupDiv">
             <input type="submit" value="Sign up" id="signupButton">
         </div>
     </form>
+
+    <div id="addInfo">
+        <br>
+        <em id="return"><br>
+            Click <a href="http://localhost:8081/client/index.html">here</a> to return to the welcome page.
+        </em>
+    </div>
 </div>
 </body>
 </html>

@@ -160,7 +160,7 @@ public class UserController {
 
     //This method is for new users who are being added to te database
     public String insert(@FormDataParam("firstName") String firstName, @FormDataParam("surname") String surname, @FormDataParam("dateOfBirth") String dateOfBirth,
-                              @FormDataParam("email") String email, @FormDataParam("phoneNumber") String phoneNumber, @FormDataParam("password") String password){
+                              @FormDataParam("email") String email, @FormDataParam("phoneNumber") String phoneNumber, @FormDataParam("password") String password, @FormDataParam("passDuplicate") String passDuplicate){
 
         try{
             out.println("/Users/new");
@@ -171,6 +171,8 @@ public class UserController {
             if (!main.nameValid(firstName) || !main.nameValid(surname) || dateOfBirth == null || !main.emailValid(email) || !main.passwordValid(password)) {
                 throw new Exception("One or more of the form parameters are missing or in the wrong data format");
             }
+
+            if(!password.equals(passDuplicate)) throw new Exception("Passwords don't match");
 
             ps.setString(1,null);//auto-increments the primary key
             fillColumn(firstName, surname, dateOfBirth, email, phoneNumber, password, ps, 1);

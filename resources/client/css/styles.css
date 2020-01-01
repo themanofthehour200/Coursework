@@ -23,7 +23,7 @@ label{
     font-size: 32pt;
 }
 
-loginDiv {
+.loginDiv {
     background-color: lightblue;
     text-align: center;
     font-size: 32pt;

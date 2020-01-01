@@ -14,19 +14,35 @@ h1{
     margin: 0 auto;
     min-height: 600px;
     padding: 10px;
+    text-align: center;
 }
 
 .signupInput {
     background-color: white;
-    font-size: 24pt;
+    font-size: 18pt;
     margin-top: 5px;
     margin-left: 20px;
 }
 
 .signupDiv {
     background-color: lightblue;
-    font-size: 24pt;
+    font-size: 18pt;
     margin-top: 5px;
     margin-left: 20px;
 }
 
+#signupButton{
+    font-size: 18px;
+    text-align: center;
+    width: 300px;
+    height: 100px;
+    color: black;
+    background-color: lightgreen;
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
+}
+
+#signupButton:hover {
+    background-color: green;
+}
