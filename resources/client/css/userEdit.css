@@ -1,0 +1,68 @@
+body {
+    background-color: lightblue;
+    margin: 0;
+    font-family: 'Arial', serif;
+}
+
+h1{
+    text-align: center;
+}
+
+#content {
+    background-color: lightblue;
+    width: 1000px;
+    margin: 0 auto;
+    min-height: 600px;
+    padding: 10px;
+    text-align: center;
+}
+
+.editInput {
+    background-color: white;
+    font-size: 18pt;
+    margin-top: 5px;
+    margin-left: 20px;
+}
+
+.editDiv {
+    background-color: lightblue;
+    font-size: 18pt;
+    margin-top: 5px;
+    margin-left: 20px;
+}
+
+#editButton{
+    font-size: 18px;
+    text-align: center;
+    width: 150px;
+    height: 100px;
+    color: black;
+    background-color: lightgreen;
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
+}
+
+#editButton:hover {
+    background-color: green;
+}
+
+#backButton{
+    font-size: 18px;
+    text-align: center;
+    width: 150px;
+    height: 100px;
+    color: black;
+    background-color: orangered;
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
+}
+
+#backButton:hover {
+    background-color: red;
+}
+
+#backButton , #editButton {
+    display: inline-block;
+}

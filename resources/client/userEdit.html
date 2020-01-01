@@ -10,6 +10,53 @@
 </head>
 
 <body onload = pageLoad()>
-Edit ya user ere
+<div id="content">
+    <h1>Edit User</h1>
+    <hr />
+    <form id="editForm">
+        <div class="editDiv">
+            <label for= "firstName">First Name: </label>
+            <input type="text" name="firstName" id="firstName" class="editInput">
+        </div>
+
+        <div class="editDiv">
+            <label for= "surname">Surname: </label>
+            <input type="text" name="surname" id="surname" class="editInput">
+        </div>
+
+        <div class="editDiv">
+            <label for= "dateOfBirth">Date of Birth: </label>
+            <input type="date" name="dateOfBirth" id="dateOfBirth" class="editInput">
+        </div>
+
+        <div class="editDiv">
+            <label for= "email">Email: </label>
+            <input type="text" name="email" id="email" class="editInput">
+        </div>
+
+        <div class="editDiv">
+            <label for= "phoneNumber">Phone Number: </label>
+            <input type="text" name="phoneNumber" id="phoneNumber" class="editInput">
+        </div>
+
+        <div class="editDiv">
+            <label for= "password">Password: </label>
+            <input type="password" name="password" id="password" class="editInput">
+        </div>
+
+        <div class="editDiv">
+            <label for= "passDuplicate">Confirm Password: </label>
+            <input type="password" name="passDuplicate" id="passDuplicate" class="editInput">
+        </div>
+
+        <br>
+
+        <input type="submit" value="Edit" id="editButton">
+
+        <input type="button" value="Cancel" id="backButton">
+
+    </form>
+
+</div>
 </body>
 </html>
