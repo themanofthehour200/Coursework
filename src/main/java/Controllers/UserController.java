@@ -79,6 +79,32 @@ public class UserController {
         }
     }
 
+    //The method to log out
+    @POST
+    @Path("logout")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public String logout(@FormDataParam("userID") int userID){
+        System.out.println("Users/logout");
+        JSONObject item = new JSONObject();
+
+        try{
+            PreparedStatement ps = main.db.prepareStatement("UPDATE Users SET Token = ? WHERE UserID = ?");
+            //generates new token so that the client has to log in again to have a valid token
+            String token = UUID.randomUUID().toString();
+            ps.setString(1,token);
+            ps.setInt(2,userID);
+            ps.execute();
+            return "{\"status\": \"OK\"}";
+
+        } catch (Exception e){
+            System.out.println("Database error: " + e.getMessage());
+            return "{\"error\": \"Unable to logout, please see server console for more info.\"}";
+        }
+    }
+
+
+
 /*    This is the method for selecting all rows in the table of Users
     This method is mainly just used for testing purposes, as this is easier than
     manually having to check the Accounts table after each applicable test*/

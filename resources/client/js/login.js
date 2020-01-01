@@ -30,23 +30,5 @@ function pageLoad() {
     }
 
 
-    function logout() {
 
-        fetch("/user/logout", {method: 'post'}
-        ).then(response => response.json()
-        ).then(responseData => {
-            if (responseData.hasOwnProperty('error')) {
-
-                alert(responseData.error);
-
-            } else {
-
-                Cookies.remove("username");
-                Cookies.remove("token");
-
-                window.location.href = '/client/index.html';
-
-            }
-        });
-    }
 }
