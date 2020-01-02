@@ -14,7 +14,6 @@
 
     <div id="logInMessage"></div>
 
-
     <!--The container for the ribbon itself-->
     <div id="navigation_container">
 
@@ -34,6 +33,42 @@
         </div>
     </div>
     <h1>Accounts</h1>
+
+    <!--The list of all of the users accounts that they currently have access to-->
+    <div id ="listDiv"></div>
+
+    <!--The 'edit' screen for when the user wishes to edit an account-->
+    <div id="editDiv">
+        <h2 id="editHeading"></h2>
+        <form id="fruitForm">
+            <input type="hidden" name="id" id="accountID">
+            <div>
+                <label for="accountName" class="label">Account Name:</label>
+                <input type="text" name="accountName" id="accountName">
+            </div>
+            <div>
+                <label for="balance" class="label">Balance:</label>
+                <input type="text" name="balance" id="balance" disabled>
+            </div>
+
+            <!--Slightly different input for currency as it is a drop down list-->
+            <div>
+                <label for="currency" class="label">Currency:</label>
+                <select name = "currency" id = "currency">
+                    <option value="GDP" selected>GDP (£)</option>
+                    <option value="USD">USD ($)</option>
+                    <option value="EUR">EUR (€)</option>
+                </select>
+            </div>
+
+            <div>
+                <input type="submit" value="Save" id="saveButton">
+                <input type="submit" value="Cancel" id="cancelButton">
+            </div>
+        </form>
+    </div>
+
+
 </div>
 </body>
 </html>

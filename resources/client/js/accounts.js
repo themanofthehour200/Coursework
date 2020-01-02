@@ -1,8 +1,73 @@
 function pageLoad() {
+
+
     startUp();
+
+    let accountsHTML = `<table>` +
+        '<tr>' +
+        '<th>ID</th>' +
+        '<th>Account Name</th>' +
+        '<th>Balance</th>' +
+        '<th>Currency</th>' +
+        '<th class="last">Options</th>' +
+        '</tr>';
+
+    fetch('/Accounts/viewAll/'+ Cookies.get("UserID"), {method: 'get'}
+    ).then(response => response.json()
+    ).then(accounts => {
+
+        for (let account of accounts) {
+
+            accountsHTML += `<tr>` +
+                `<td>${account.AccountID}</td>` +
+                `<td>${account.AccountName}</td>` +
+                `<td>${account.Balance} </td>` +
+                `<td>${account.Currency}</td>` +
+                `<td class="last">` +
+                `<button class='editButton' data-id='${account.AccountID}'>Edit</button>` +
+                `<button class='deleteButton' data-id='${account.AccountID}'>Delete</button>` +
+                `</td>` +
+                `</tr>`;
+        }
+
+        accountsHTML += '</table>';
+
+        document.getElementById("listDiv").innerHTML = accountsHTML;
+
+        let editButtons = document.getElementsByClassName("editButton");
+        for (let button of editButtons) {
+            button.addEventListener("click", editAccount);
+        }
+
+        let deleteButtons = document.getElementsByClassName("deleteButton");
+        for (let button of deleteButtons) {
+            button.addEventListener("click", deleteAccount);
+        }
+
+    });
+
+    document.getElementById("saveButton").addEventListener("click", saveChanges);
+    document.getElementById("cancelButton").addEventListener("click", cancelChanges);
 
 
 }
+
+function editAccount(){
+    alert("edit fruit");
+}
+
+function deleteAccount(){
+    alert("delete fruit");
+}
+
+function saveChanges(){
+    alert("Changes to account made");
+}
+
+function cancelChanges(){
+    alert("changes cancelled");
+}
+
 
 function logout() {
     console.log("log out");

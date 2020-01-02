@@ -17,13 +17,12 @@ import static java.lang.System.out;
 @Path("Accounts/")//Sets the Path for all API calls in this class
 public class AccountController {
 
-    @POST
-    @Path("viewAll")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @GET
+    @Path("viewAll/{id}")
     @Produces(MediaType.APPLICATION_JSON)//Jersey turns this into an HTTP request handler
 
     /*This method returns all the details of accounts that the user has access to view*/
-    public String viewAll(@FormDataParam("userID") int userID) {
+    public String viewAll(@PathParam("id") int userID) {
         JSONArray list = new JSONArray();
         try{
         PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Accounts INNER JOIN AccountManagers AM ON Accounts.AccountID = AM.AccountID AND AM.ManagerID = ?");
