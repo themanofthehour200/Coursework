@@ -97,6 +97,7 @@ th.last {
 
 #newButton {
     background-color: cornflowerblue;
+    text-align: center;
 }
 
 #newButton:hover {
