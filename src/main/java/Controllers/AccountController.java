@@ -17,7 +17,7 @@ import static java.lang.System.out;
 @Path("Accounts/")//Sets the Path for all API calls in this class
 public class AccountController {
 
-    @GET
+    @POST
     @Path("viewAll/{id}")
     @Produces(MediaType.APPLICATION_JSON)//Jersey turns this into an HTTP request handler
 
