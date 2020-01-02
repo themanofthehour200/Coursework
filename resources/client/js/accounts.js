@@ -3,6 +3,11 @@ function pageLoad() {
 
     startUp();
 
+    //Associated array of currency types to their signs
+    let signs = {"EUR": "&#8364;", "GDP": "&#163;", "USD": "&#36;"};
+    let rates = {"GDP":1,"EUR" : 1.18, "USD": 1.31};
+
+
     let accountsHTML = `<table>` +
         '<tr>' +
         '<th>ID</th>' +
@@ -18,10 +23,13 @@ function pageLoad() {
 
         for (let account of accounts) {
 
+            let currency = (account.Currency).toString();
+
             accountsHTML += `<tr>` +
                 `<td>${account.AccountID}</td>` +
                 `<td>${account.AccountName}</td>` +
-                `<td>${account.Balance} </td>` +
+                /*Works out the value of the balance with the correct currency*/
+                `<td>`+signs[account.Currency] + `${(account.Balance /100*rates[account.Currency]).toFixed(2)} </td>` +
                 `<td>${account.Currency}</td>` +
                 `<td class="last">` +
                 `<button class='editButton' data-id='${account.AccountID}'>Edit</button>` +
