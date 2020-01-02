@@ -5,8 +5,12 @@ function pageLoad() {
 }
 
 function logout() {
+    console.log("log out");
 
-    fetch("/Users/logout", {method: 'post'}
+    let formData = new FormData();
+    formData.append("userID", Cookies.get("UserID"));
+
+    fetch("/Users/logout", {method: 'post', body:formData}
     ).then(response => response.json()
     ).then(responseData => {
         if (responseData.hasOwnProperty('error')) {
@@ -14,10 +18,9 @@ function logout() {
             alert(responseData.error);
 
         } else {
-
+            console.log("User logged out");
             Cookies.remove("username");
             Cookies.remove("token");
-
             window.location.href = '/client/index.html';
 
         }
