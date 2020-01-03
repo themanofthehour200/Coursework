@@ -72,10 +72,6 @@ function editAccount(event){
         document.getElementById("balance").value = '';
         document.getElementById("balance").disabled = false;
 
-        document.getElementById("listDiv").style.display = 'none';
-        document.getElementById("newButton").style.display = 'none';
-        document.getElementById("editDiv").style.display = 'block';
-
     } else {
 
         fetch('/Accounts/search/' + id, {method: 'get'}
@@ -94,15 +90,15 @@ function editAccount(event){
                 document.getElementById("balance").disabled = true;
                 document.getElementById("currency").value = responseData.Currency;
 
-                document.getElementById("listDiv").style.display = 'none';
-                document.getElementById("newButton").style.display = 'none';
-                document.getElementById("editDiv").style.display = 'block';
 
             }
 
         });
 
     }
+    document.getElementById("listDiv").style.display = 'none';
+    document.getElementById("newButton").style.display = 'none';
+    document.getElementById("editDiv").style.display = 'block';
 }
 
 function deleteAccount(){

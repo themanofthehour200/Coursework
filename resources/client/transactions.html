@@ -45,32 +45,36 @@
 
     <!--The list of all of the users accounts that they currently have access to-->
     <div id ="listDiv"></div>
-    <button id="newButton" class="editButton">Create Account</button>
+    <button id="newButton" class="editButton">Create Transaction</button>
 
 
 
-    <!--The 'edit' screen for when the user wishes to edit an account-->
+    <!--The 'edit' screen for when the user wishes to edit a transaction-->
     <div id="editDiv">
         <h2 id="editHeading"></h2>
-        <form id="accountForm">
-            <input type="hidden" name="accountID" id="accountID">
+        <p>To put money into your account make the transaction negative</p>
+        <form id="transactionForm">
+            <input type="hidden" name="transactionID" id="transactionID">
+
             <div>
-                <label for="accountName" class="label">Account Name:</label>
-                <input type="text" name="accountName" id="accountName">
-            </div>
-            <div>
-                <label for="balance" class="label">Balance:</label>
-                <input type="text" name="balance" id="balance">
+                <label for="balanceChange" class="label">Amount:</label>
+                <input type="text" name="balanceChange" id="balanceChange">
             </div>
 
-            <!--Slightly different input for currency as it is a drop down list-->
+            <!--Drop down list of users categories-->
             <div>
-                <label for="currency" class="label">Currency:</label>
-                <select name = "currency" id = "currency">
-                    <option value="GDP" selected>GDP (&#163)</option>
-                    <option value="USD">USD ($)</option>
-                    <option value="EUR">EUR (&#8364)</option>
-                </select>
+                <label for = "category" class = "label">Category:</label>
+                <select name = "category" id = "category"></select>
+            </div>
+
+            <div>
+                <label for="description" class = "label">Description:</label>
+                <textarea name="description" rows="2" cols="20" id = "description"></textarea>
+            </div>
+
+            <div>
+                <label for= "date" class = "label">Date of Transaction: </label>
+                <input type="date" name="date" id="date">
             </div>
 
             <div>

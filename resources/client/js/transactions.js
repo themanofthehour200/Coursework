@@ -21,31 +21,44 @@ function pageLoad() {
         }}
     );
 
+    //The select list of what categories the user can access
+    let target = document.getElementById( 'category' );
+
+    fetch('/Categories/list/'+ Cookies.get("UserID"), {method: 'get'}
+    ).then(response => response.json()
+    ).then(categories => {
+        for (let category of categories) {
+            let option = document.createElement( 'option' );
+            option.value = category.CategoryID;
+            option.text = category.CategoryName;
+            console.log(option.value + " " + option.text);
+            target.add(option);
+        }}
+    );
+
     document.getElementById("reloadButton").addEventListener("click", changeUser);
+    document.getElementById("newButton").addEventListener("click", changeUser);
 
 }
 
-function editAccount(event){
+function editTransaction(event){
 
     const id = event.target.getAttribute("data-id");
 
-    //If no id exists it means that tis function is being called by the 'create new account' button instead
+    //If no id exists it means that this function is being called by the 'create new transaction' button instead
     if (id === null) {
 
-        document.getElementById("editHeading").innerHTML = 'Create New Account:';
+        document.getElementById("editHeading").innerHTML = 'Create New Transaction:';
 
-        document.getElementById("accountID").value = '';
-        document.getElementById("accountName").value = '';
-        document.getElementById("balance").value = '';
-        document.getElementById("balance").disabled = false;
+        document.getElementById("transactionID").value = '';
+        document.getElementById("balanceChange").value = '';
+        document.getElementById("description").value = '';
+        document.getElementById("date").value = '';
 
-        document.getElementById("listDiv").style.display = 'none';
-        document.getElementById("newButton").style.display = 'none';
-        document.getElementById("editDiv").style.display = 'block';
 
     } else {
 
-        fetch('/Accounts/search/' + id, {method: 'get'}
+        fetch('/Transactions/search/' + id, {method: 'get'}
         ).then(response => response.json()
         ).then(responseData => {
 
@@ -53,23 +66,21 @@ function editAccount(event){
                 alert(responseData.error);
             } else {
 
-                document.getElementById("editHeading").innerHTML = 'Editing ' + responseData.AccountName + ':';
+                document.getElementById("editHeading").innerHTML = 'Editing transaction number ' + responseData.TransactionID + ':';
 
-                document.getElementById("accountID").value = id;
-                document.getElementById("accountName").value = responseData.AccountName;
-                document.getElementById("balance").value = String.fromCharCode(parseInt(signs[responseData.Currency+"2"],16)) + Math.floor((responseData.Balance /100*rates[responseData.Currency])).toFixed(2);
-                document.getElementById("balance").disabled = true;
-                document.getElementById("currency").value = responseData.Currency;
-
-                document.getElementById("listDiv").style.display = 'none';
-                document.getElementById("newButton").style.display = 'none';
-                document.getElementById("editDiv").style.display = 'block';
-
+                document.getElementById("transactionID").value = id;
+                document.getElementById("balanceChange").value = String.fromCharCode(parseInt(signs["GDP2"],16)) + (responseData.BalanceChange /100).toFixed(2);
+                document.getElementById("category").value = responseData.CategoryID;
+                document.getElementById("description").value = responseData.Description;
+                document.getElementById("date").value = responseData["Date"];
             }
 
         });
 
     }
+    document.getElementById("listDiv").style.display = 'none';
+    document.getElementById("newButton").style.display = 'none';
+    document.getElementById("editDiv").style.display = 'block';
 }
 
 function deleteAccount(){
@@ -120,43 +131,38 @@ function deleteAccount(){
 function saveChanges() {
     event.preventDefault();
 
-    document.getElementById("balance").disabled=false;
-
     //Makes sure that all parts have been filled in
-    if (document.getElementById("accountName").value.trim() === '') {
-        alert("Please provide an account name.");
+    if (document.getElementById("balanceChange").value.trim() === '') {
+        alert("Please provide a transaction amount.");
         return;
     }
 
-    if (document.getElementById("balance").value.trim() === '') {
-        alert("Please provide a balance.");
+    if (document.getElementById("date").value.trim() === '') {
+        alert("Please provide a date.");
         return;
     }
 
-    if (document.getElementById("currency").value.trim() === '') {
-        alert("Please provide a currency.");
-        return;
-    }
-
-    const id = document.getElementById("accountID").value;
-    const form = document.getElementById("accountForm");
+    const id = document.getElementById("transactionID").value;
+    const form = document.getElementById("transactionForm");
     const formData = new FormData(form);
-    //formData.set("balance",document.getElementById("balance").value);
-    formData.append("userID", Cookies.get("UserID"));
 
-    //Creates account if a new account and updates the current account if it's being edited
+    formData.append("standingOrderID", "0");
+
+    //Creates account if a new transaction or updates the current transaction if it's being edited
     let apiPath = '';
     if (id === '') {
-        console.log("new account");
-        apiPath = '/Accounts/new';
-        console.log(Math.floor((formData.get("balance")*100)/rates[formData.get("currency")]));
-        formData.set("balance",Math.ceil((formData.get("balance")*100)/rates[formData.get("currency")]));
+        console.log("new transaction");
+        apiPath = '/Transactions/create';
+
+        formData.set("balanceChange",formData.get("balanceChange")*100);
 
     } else {
         console.log("edit account");
-        formData.set("balance",Math.ceil((formData.get("balance").replace(/[^\d.-]/g, ''))*100/rates[formData.get("currency")]));
-        apiPath = '/Accounts/edit';
+        formData.set("balanceChange",(formData.get("balanceChange")).replace(/[^\d.-]/g, '')*100);
+        apiPath = '/Transactions/edit';
     }
+
+    formData.append("accountID",Cookies.get("AccountID"));
 
     for (let value of formData.values()) {
         console.log(value);
@@ -173,6 +179,7 @@ function saveChanges() {
             document.getElementById("newButton").style.display = 'block';
             document.getElementById("editDiv").style.display = 'none';
             pageLoad();
+            changeUser();
         }
     });
 
@@ -262,7 +269,11 @@ function displayName(firstname, surname){
 
 function changeUser(event) {
 
-    event.preventDefault();
+    if(event !==undefined){
+        event.preventDefault();
+    }
+
+    //Displaying account balance at top
 
     let id = document.getElementById("accountChoose").value;
     Cookies.set("AccountID",id);
@@ -281,6 +292,7 @@ function changeUser(event) {
     });
 
 
+    //Formatting all transactions relating to the account
     let transactionHTML = `<table>` +
         '<tr>' +
         '<th>ID</th>' +
@@ -316,7 +328,7 @@ function changeUser(event) {
 
         let editButtons = document.getElementsByClassName("editButton");
         for (let button of editButtons) {
-            button.addEventListener("click", editAccount);
+            button.addEventListener("click", editTransaction);
         }
 
         let deleteButtons = document.getElementsByClassName("deleteButton");
@@ -328,8 +340,5 @@ function changeUser(event) {
 
     document.getElementById("saveButton").addEventListener("click", saveChanges);
     document.getElementById("cancelButton").addEventListener("click", cancelChanges);
-
-
-
 }
 

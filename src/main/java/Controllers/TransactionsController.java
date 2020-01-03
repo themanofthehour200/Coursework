@@ -100,17 +100,19 @@ public class TransactionsController {
         }
     }
 
-    @POST
-    @Path("search")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @GET
+    @Path("search/{id}")
     @Produces(MediaType.APPLICATION_JSON)//Jersey turns this into an HTTP request handler
     //This method returns the details of a specific transaction.
-    public String search(@FormDataParam("transactionID") int transactionID) {
+    public String search(@PathParam("id") int transactionID) {
 
         System.out.println("Transactions/search");
 
         try {
-            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Transactions WHERE TransactionID = ?");
+            PreparedStatement ps = main.db.prepareStatement("SELECT Transactions.*, Categories.CategoryName FROM Transactions " +
+                    "INNER JOIN Categories ON Transactions.CategoryID = Categories.CategoryID " +
+                    "AND Transactions.TransactionID=?");
+
             ps.setInt(1, transactionID);
             ResultSet result = ps.executeQuery();
 
@@ -123,6 +125,7 @@ public class TransactionsController {
                 item.put("Description", result.getString(5));
                 item.put("Date", result.getString(6));
                 item.put("StandingOrderID", result.getInt(7));
+                item.put("CategoryName",result.getString(8));
                 return item.toString(); //If a transaction found then return it
             }
             else
