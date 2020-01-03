@@ -27,7 +27,7 @@ function pageLoad() {
                 `<td>${account.AccountID}</td>` +
                 `<td>${account.AccountName}</td>` +
                 /*Works out the value of the balance with the correct currency*/
-                `<td>`+signs[account.Currency] + `${(account.Balance /100*rates[account.Currency]).toFixed(2)} </td>` +
+                `<td>`+signs[account.Currency] + `${Math.floor((account.Balance * rates[account.Currency] /100)).toFixed(2)} </td>` +
                 `<td>${account.Currency}</td>` +
                 `<td class="last">` +
                 `<button class='editButton' data-id='${account.AccountID}'>Edit</button>` +
@@ -70,6 +70,7 @@ function editAccount(event){
         document.getElementById("accountID").value = '';
         document.getElementById("accountName").value = '';
         document.getElementById("balance").value = '';
+        document.getElementById("balance").disabled = false;
 
         document.getElementById("listDiv").style.display = 'none';
         document.getElementById("newButton").style.display = 'none';
@@ -89,7 +90,7 @@ function editAccount(event){
 
                 document.getElementById("accountID").value = id;
                 document.getElementById("accountName").value = responseData.AccountName;
-                document.getElementById("balance").value = String.fromCharCode(parseInt(signs[responseData.Currency+"2"],16)) + (responseData.Balance /100*rates[responseData.Currency]).toFixed(2);
+                document.getElementById("balance").value = String.fromCharCode(parseInt(signs[responseData.Currency+"2"],16)) + Math.floor((responseData.Balance /100*rates[responseData.Currency])).toFixed(2);
                 document.getElementById("balance").disabled = true;
                 document.getElementById("currency").value = responseData.Currency;
 
@@ -149,8 +150,10 @@ function deleteAccount(){
 }
 
 
-function saveChanges(){
+function saveChanges() {
     event.preventDefault();
+
+    document.getElementById("balance").disabled=false;
 
     //Makes sure that all parts have been filled in
     if (document.getElementById("accountName").value.trim() === '') {
@@ -179,14 +182,17 @@ function saveChanges(){
     if (id === '') {
         console.log("new account");
         apiPath = '/Accounts/new';
-        console.log("user id = " + formData.ghgtrujot);
-        console.log("user id = " + formData.userID);
-        console.log("account name = " + formData.accountName);
-        console.log("balance = " + formData.balance);
-        console.log("currency = " + formData.currency);
+        console.log(Math.floor((formData.get("balance")*100)/rates[formData.get("currency")]));
+        formData.set("balance",Math.ceil((formData.get("balance")*100)/rates[formData.get("currency")]));
+
     } else {
         console.log("edit account");
+        formData.set("balance",Math.ceil((formData.get("balance").replace(/[^\d.-]/g, ''))*100/rates[formData.get("currency")]));
         apiPath = '/Accounts/edit';
+    }
+
+    for (let value of formData.values()) {
+        console.log(value);
     }
 
     fetch(apiPath, {method: 'post', body: formData}
@@ -202,18 +208,26 @@ function saveChanges(){
             pageLoad();
         }
     });
+
+}
+
+
+function showVals(value){
+    console.log(value);
 }
 
 function cancelChanges(){
     event.preventDefault();
 
+    pageLoad();
+
     /*"""""""""""""""""""
         UNCOMMENT THE SECTION BELOW WHEN PUTTING INTO THE COURSEWORK
     """""""""""""""""""*/
 
-/*    document.getElementById("listDiv").style.display = 'block';
+    document.getElementById("listDiv").style.display = 'block';
     document.getElementById("newButton").style.display = 'block';
-    document.getElementById("editDiv").style.display = 'none';*/
+    document.getElementById("editDiv").style.display = 'none';
 }
 
 
