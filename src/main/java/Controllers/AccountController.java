@@ -73,12 +73,12 @@ public class AccountController {
                 item.put("Currency", result.getString(4));
                 return item.toString();
             } else{
-                throw new Exception("User doesn't exist");
+                throw new Exception("Account doesn't exist");
             }
         }
 
         catch (Exception e){
-            out.println("Error searching database 'Users', error message:\n" + e.getMessage());
+            out.println("Error searching database 'Accounts', error message:\n" + e.getMessage());
             return "{\"error\": \"Unable to get item, please see server console for more info.\"}";
         }
     }

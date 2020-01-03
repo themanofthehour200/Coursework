@@ -59,7 +59,7 @@ public class TransactionsController {
     @Path("view/{id}")
     @Produces(MediaType.APPLICATION_JSON)
 
-    //This returns the details of all transactions done on all of a user's accounts
+    //This returns the details of all transactions done on an account
     public String view(@PathParam("id") Integer searchID) {
         try {
             if (searchID == null) {

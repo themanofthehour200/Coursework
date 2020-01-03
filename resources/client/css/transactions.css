@@ -17,6 +17,10 @@ h1{
     text-align: center;
 }
 
+#listDiv{
+    font-size:20px
+}
+
 #navigation li {
     list-style: none;
     display: block;
@@ -39,8 +43,10 @@ h1{
 
 #navigation_container {
     margin: 0 auto;
-    width: 1250px;
+    width: 1400px;
 }
+
+#chosenAccountBalance { display: inline }
 
 .rectangle {
     background: #e5592e;
@@ -50,4 +56,96 @@ h1{
     border-radius: 3px;
     z-index: 500; /* the stack order: foreground */
     margin: 3em 0;
+}
+
+tr {
+    text-align: center;
+}
+
+td {
+    text-align: left;
+}
+
+th {
+    text-align: left;
+}
+
+td.last {
+    text-align: right;
+}
+
+th.last {
+    text-align: right;
+}
+
+.editButton, .deleteButton, #saveButton, #cancelButton ,#reloadButton{
+    color: black;
+    font-size: 14px;
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
+    transition-duration: 0.4s;
+}
+
+.editButton, #reloadButton {
+    background-color: silver;
+}
+
+.editButton:hover , #reloadButton:hover{
+    background-color: grey;
+}
+
+#newButton {
+    background-color: cornflowerblue;
+    text-align: center;
+}
+
+#newButton:hover {
+    background-color: dodgerblue;
+}
+
+.deleteButton, #cancelButton {
+    background-color: indianred;
+    margin-left: 10px;
+}
+
+.deleteButton:hover, #cancelButton:hover {
+    background-color: firebrick;
+}
+
+#saveButton {
+    background-color: lightgreen;
+}
+
+#saveButton:hover {
+    background-color: forestgreen;
+}
+
+form div {
+    width: 100%;
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.label {
+    width: 100px;
+    margin-bottom: 0;
+    display: inline-block;
+}
+
+.floatRight {
+    float: right;
+}
+
+#editDiv {
+    display: none;
+}
+
+table {
+    width: 100%;
+}
+
+.fruitColour {
+    border-radius: 8px;
+    padding-left: 64px;
 }
