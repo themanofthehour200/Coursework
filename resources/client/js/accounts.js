@@ -232,8 +232,10 @@ function logout() {
 
         } else {
             console.log("User logged out");
-            Cookies.remove("username");
-            Cookies.remove("token");
+            Cookies.remove("UserID");
+            Cookies.remove("Token");
+            Cookies.remove("FirstName");
+            Cookies.remove("Surname");
             window.location.href = '/client/index.html';
 
         }
@@ -268,24 +270,8 @@ function startUp(){
 
     //This saves the users names having to be searched up every time the user goes through the navigation links
 
-    if(Cookies.get("Firstname")!=null && Cookies.get("Surname")!=null){
-        displayName(Cookies.get("Firstname"),Cookies.get("Surname"));
 
-    } else {
-        console.log("Gone to the catch");
-        /*This retrieves the details of the user*/
-        fetch("/Users/search/"+ userID, {method: 'get'}
-        ).then(response => response.json()
-        ).then(responseData => {
-            if (responseData.hasOwnProperty('error')) {
-                alert(responseData.error);
-            } else {
-                displayName(responseData.Firstname, responseData.Surname);
-                Cookies.set("Firstname", (responseData.Firstname).valueOf());
-                Cookies.set("Surname", responseData.Surname.valueOf());
-            }
-        });
-    }
+    displayName(Cookies.get("FirstName"),Cookies.get("Surname"));
 }
 
 function displayName(firstname, surname){

@@ -51,13 +51,15 @@ public class UserController {
         JSONObject item = new JSONObject();
 
         try{
-            PreparedStatement ps = main.db.prepareStatement("SELECT UserID FROM Users WHERE Email = ? AND Password = ?");
+            PreparedStatement ps = main.db.prepareStatement("SELECT UserID,FirstName,Surname FROM Users WHERE Email = ? AND Password = ?");
             ps.setString(1,email);
             ps.setString(2,password);
             ResultSet result = ps.executeQuery();
 
             if (result.next()) { //If user has correct log-in details
                 item.put("UserID", result.getInt(1));
+                item.put("FirstName",result.getString(2));
+                item.put("Surname",result.getString(3));
                 String token = UUID.randomUUID().toString();//generates log-in token to be made into a cookie by the client
                 item.put("Token",token);
 
