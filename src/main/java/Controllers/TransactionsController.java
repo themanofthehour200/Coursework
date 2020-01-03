@@ -71,10 +71,9 @@ public class TransactionsController {
 
             /*This SQL statement returns all of the details of the transactions,
             as well as some of the details of the user who is viewing the transactions */
-            PreparedStatement ps = main.db.prepareStatement("SELECT Transactions.*, Accounts.AccountName FROM Transactions " +
-                    "INNER JOIN Accounts ON Accounts.AccountID = Transactions.AccountID" + /*Gets the transactions for the specified account*/
-                    " JOIN AccountManagers ON AccountManagers.AccountID = Transactions.AccountID" + /*Gets the account managers for the account*/
-                    " JOIN Users ON Users.UserID = AccountManagers.ManagerID AND Users.UserID=?"); /*Gets the name of the account manager*/
+            PreparedStatement ps = main.db.prepareStatement("SELECT Transactions.*, Categories.CategoryName FROM Transactions " +
+                    "INNER JOIN Categories ON Transactions.CategoryID = Categories.CategoryID " +
+                    "AND Transactions.AccountID=?"); /*Gets the name of the account manager*/
 
             ps.setInt(1, searchID); //The user with the specific account ID is searched for
 
@@ -89,7 +88,7 @@ public class TransactionsController {
                 item.put("Description", result.getString(5));
                 item.put("Date", result.getString(6));
                 item.put("StandingOrderID", result.getInt(7));
-                item.put("AccountName",result.getString(8));
+                item.put("CategoryName",result.getString(8));
                 list.add(item);
             }
             return list.toString();

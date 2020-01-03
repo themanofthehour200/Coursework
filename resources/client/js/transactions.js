@@ -7,9 +7,6 @@ function pageLoad() {
 
     startUp();
 
-
-    let first = true;
-
     //Choosing which account's transactions to look at
     let select = document.getElementById( 'accountChoose' );
 
@@ -17,22 +14,14 @@ function pageLoad() {
     ).then(response => response.json()
     ).then(accounts => {
         for (let account of accounts) {
-            if (first === true){
-                let id = account.AccountID;
-                console.log("ID is:" + id);
-                changeUser(id);
-                first=false;
-            }
             let option = document.createElement( 'option' );
             option.value = account.AccountID;
             option.text = account.AccountName;
-            option.selected = true;
-            console.log(option.text+ " " + option.value);
             select.add(option);
         }}
     );
 
-    document.getElementById("reloadButton").addEventListener("click", changeUser(null));
+    document.getElementById("reloadButton").addEventListener("click", changeUser);
 
 }
 
@@ -271,16 +260,12 @@ function displayName(firstname, surname){
 
 }
 
-function changeUser(id) {
+function changeUser(event) {
 
-    if(id===null){
-        console.log("null id");
-        id = document.getElementById("accountChoose").value;
-    }
+    event.preventDefault();
 
-    console.log("\n\n"+id);
-
-    console.log('/Accounts/search/' + id);
+    let id = document.getElementById("accountChoose").value;
+    Cookies.set("AccountID",id);
 
     fetch('/Accounts/search/' + id, {method: 'get'}
     ).then(response => response.json()
@@ -289,49 +274,45 @@ function changeUser(id) {
         if (responseData.hasOwnProperty('error')) {
             alert(responseData.error);
         } else {
-
-            console.log()
-
-            let accountAmount= signs[responseData.Currency] + `${Math.floor((responseData.Balance * rates[responseData.Currency] /100)).toFixed(2)}`;
-            document.getElementById('chosenAccountBalance').value = accountAmount;
+            let accountAmount= String.fromCharCode(parseInt(signs[responseData.Currency+"2"],16)) + `${Math.floor((responseData.Balance * rates[responseData.Currency] /100)).toFixed(2)}`;
+            document.getElementById('chosenAccountBalance').innerText = "  Current Account Balance: "+ accountAmount;
 
         }
     });
 
 
-
-
-    let accountsHTML = `<table>` +
+    let transactionHTML = `<table>` +
         '<tr>' +
         '<th>ID</th>' +
-        '<th>Account Name</th>' +
-        '<th>Balance</th>' +
-        '<th>Currency</th>' +
+        '<th>Amount</th>' +
+        '<th>Category</th>' +
+        '<th>Description</th>' +
+        '<th>Date</th>' +
         '<th class="last">Options</th>' +
         '</tr>';
 
-    fetch('/Accounts/viewAll/'+ Cookies.get("UserID"), {method: 'post'}
+    fetch('/Transactions/view/'+ Cookies.get("AccountID"), {method: 'get'}
     ).then(response => response.json()
-    ).then(accounts => {
+    ).then(transactions => {
 
-        for (let account of accounts) {
+        for (let transaction of transactions) {
 
-            accountsHTML += `<tr>` +
-                `<td>${account.AccountID}</td>` +
-                `<td>${account.AccountName}</td>` +
-                /*Works out the value of the balance with the correct currency*/
-                `<td>`+signs[account.Currency] + `${Math.floor((account.Balance * rates[account.Currency] /100)).toFixed(2)} </td>` +
-                `<td>${account.Currency}</td>` +
+            transactionHTML += `<tr>` +
+                `<td>${transaction.TransactionID}</td>` +
+                `<td>`+signs["GDP"] + `${(transaction.BalanceChange /100).toFixed(2)} </td>` +
+                `<td>${transaction.CategoryName}</td>` +
+                `<td>${transaction.Description}</td>` +
+                `<td>${transaction.Date}</td>` +
                 `<td class="last">` +
-                `<button class='editButton' data-id='${account.AccountID}'>Edit</button>` +
-                `<button class='deleteButton' data-id='${account.AccountID}'>Delete</button>` +
+                `<button class='editButton' data-id='${transaction.TransactionID}'>Edit</button>` +
+                `<button class='deleteButton' data-id='${transaction.TransactionID}'>Delete</button>` +
                 `</td>` +
                 `</tr>`;
         }
 
-        accountsHTML += '</table>';
+        transactionHTML += '</table>';
 
-        document.getElementById("listDiv").innerHTML = accountsHTML;
+        document.getElementById("listDiv").innerHTML = transactionHTML;
 
         let editButtons = document.getElementsByClassName("editButton");
         for (let button of editButtons) {
