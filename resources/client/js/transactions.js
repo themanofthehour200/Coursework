@@ -90,48 +90,53 @@ function editTransaction(event){
     document.getElementById("editDiv").style.display = 'block';
 }
 
-function deleteAccount(event){
+function accountCheck(){
 
-    //This checks if the user has a high enough permission to delete the account
+    //Checks a user's permission level
 
 
     //Creates a form and gets the users ID and the account ID
-    let accountID = event.target.getAttribute("data-id");
     let formData = new FormData();
-    formData.append("accountID", accountID);
+    formData.append("accountID", Cookies.get("AccountID"));
     formData.append("userID", Cookies.get("UserID"));
 
-
+    let variable = 0;
     fetch('/Accounts/accessCheck', {method: 'post', body: formData}
     ).then(response => response.json()
     ).then(responseData => {
-        console.log("This far");
         if (responseData.hasOwnProperty('error')) {
             alert(responseData.error);
-        } else if (responseData.accessLevel !== 3) {
-            alert("You do not have a high enough access level on this account to complete this action");
-        } else {
-            const ok = confirm("Are you sure?");
-
-            if (ok === true) {
-
-                let formData = new FormData();
-                formData.append("accountID", accountID);
-
-                fetch('/Accounts/delete', {method: 'post', body: formData}
-                ).then(response => response.json()
-                ).then(responseData => {
-                        if (responseData.hasOwnProperty('error')) {
-                            alert(responseData.error);
-                        } else {
-                            console.log("Account deleted");
-                            pageLoad();
-                        }
-                    }
-                );
-            }
+        } else{
+/*            Cookies.set("AccessLevel")*/
+            console.log("response data " + responseData.accessLevel);
+            return(responseData.accessLevel/*document.getElementById("accessLevel").value*/);
+/*            document.getElementById("accessLevel").value = responseData.accessLevel;*/
         }
     });
+
+
+
+/*    console.log("in function " + document.getElementById("accessLevel").value);*/
+    /*return(document.getElementById("accessLevel").value);*/
+
+/*    const ok = confirm("Are you sure?");
+
+    if (ok === true) {
+
+        let formData = new FormData();
+        formData.append("accountID", accountID);
+
+        fetch('/Accounts/delete', {method: 'post', body: formData}
+        ).then(response => response.json()
+        ).then(responseData => {
+                if (responseData.hasOwnProperty('error')) {
+                    alert(responseData.error);
+                } else {
+                    console.log("Account deleted");
+                    pageLoad();
+                }
+            }
+        );*/
 }
 
 
@@ -191,7 +196,7 @@ function saveChanges(event) {
 
 }
 
-function cancelChanges(){
+function cancelChanges(event){
     event.preventDefault();
 
     pageLoad();
@@ -335,15 +340,37 @@ function changeUser(event) {
 
         document.getElementById("listDiv").innerHTML = transactionHTML;
 
+        //checks if the user has permission to create/delete/edit transactions
+        let accessLevel = Cookies.get("AccessLevel");
+        console.log("access " + accessLevel);
+        let canCreate = accessLevel >= 2;
+        console.log(canCreate);
+
         let editButtons = document.getElementsByClassName("editButton");
-        for (let button of editButtons) {
-            button.addEventListener("click", editTransaction);
+        let deleteButtons = document.getElementsByClassName("deleteButton");
+
+        if(canCreate){
+            for (let button of editButtons) {
+                button.addEventListener("click", editTransaction);
+            }
+
+            for (let button of deleteButtons) {
+                button.addEventListener("click", deleteAccount);
+            }
+        }else{
+            for (let button of editButtons) {
+                button.disabled = true;
+            }
+            for (let button of deleteButtons) {
+                button.disabled = true;
+            }
         }
 
-        let deleteButtons = document.getElementsByClassName("deleteButton");
-        for (let button of deleteButtons) {
-            button.addEventListener("click", deleteAccount);
-        }
+        document.getElementById("newButton").disabled = true;
+
+
+
+
 
     });
 
