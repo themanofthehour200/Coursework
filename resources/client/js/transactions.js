@@ -100,43 +100,18 @@ function accountCheck(){
     formData.append("accountID", Cookies.get("AccountID"));
     formData.append("userID", Cookies.get("UserID"));
 
-    let variable = 0;
+
     fetch('/Accounts/accessCheck', {method: 'post', body: formData}
     ).then(response => response.json()
     ).then(responseData => {
         if (responseData.hasOwnProperty('error')) {
             alert(responseData.error);
         } else{
-/*            Cookies.set("AccessLevel")*/
-            console.log("response data " + responseData.accessLevel);
-            return(responseData.accessLevel/*document.getElementById("accessLevel").value*/);
-/*            document.getElementById("accessLevel").value = responseData.accessLevel;*/
+            Cookies.set("AccessLevel",responseData.AccessLevel);
+            console.log("response data " + responseData.AccessLevel);
         }
     });
 
-
-
-/*    console.log("in function " + document.getElementById("accessLevel").value);*/
-    /*return(document.getElementById("accessLevel").value);*/
-
-/*    const ok = confirm("Are you sure?");
-
-    if (ok === true) {
-
-        let formData = new FormData();
-        formData.append("accountID", accountID);
-
-        fetch('/Accounts/delete', {method: 'post', body: formData}
-        ).then(response => response.json()
-        ).then(responseData => {
-                if (responseData.hasOwnProperty('error')) {
-                    alert(responseData.error);
-                } else {
-                    console.log("Account deleted");
-                    pageLoad();
-                }
-            }
-        );*/
 }
 
 
@@ -200,13 +175,39 @@ function cancelChanges(event){
     event.preventDefault();
 
     pageLoad();
-
+    changeUser();
 
     document.getElementById("listDiv").style.display = 'block';
     document.getElementById("newButton").style.display = 'block';
     document.getElementById("editDiv").style.display = 'none';
 }
 
+function deleteTransaction(event){
+    event.preventDefault();
+
+    const ok = confirm("Are you sure that you would like to delete this transaction?");
+
+    if (ok === true) {
+
+        let transactionID = event.target.getAttribute("data-id");
+        let formData = new FormData();
+        formData.append("transactionID", transactionID);
+
+        fetch('/Transactions/delete', {method: 'post', body: formData}
+        ).then(response => response.json()
+        ).then(responseData => {
+                if (responseData.hasOwnProperty('error')) {
+                    alert(responseData.error);
+                } else {
+                    console.log("Transaction deleted");
+                    pageLoad();
+                }
+            }
+        );
+        pageLoad();
+        changeUser();
+    }
+}
 
 function logout() {
     console.log("log out");
@@ -341,22 +342,25 @@ function changeUser(event) {
         document.getElementById("listDiv").innerHTML = transactionHTML;
 
         //checks if the user has permission to create/delete/edit transactions
+
+        accountCheck();
         let accessLevel = Cookies.get("AccessLevel");
+        Cookies.remove("AccessLevel");
         console.log("access " + accessLevel);
-        let canCreate = accessLevel >= 2;
-        console.log(canCreate);
 
         let editButtons = document.getElementsByClassName("editButton");
         let deleteButtons = document.getElementsByClassName("deleteButton");
 
-        if(canCreate){
+        if(accessLevel >= 2){
             for (let button of editButtons) {
                 button.addEventListener("click", editTransaction);
             }
 
             for (let button of deleteButtons) {
-                button.addEventListener("click", deleteAccount);
+                button.addEventListener("click", deleteTransaction);
             }
+
+            document.getElementById("newButton").disabled = false;
         }else{
             for (let button of editButtons) {
                 button.disabled = true;
@@ -364,12 +368,9 @@ function changeUser(event) {
             for (let button of deleteButtons) {
                 button.disabled = true;
             }
+
+            document.getElementById("newButton").disabled = true;
         }
-
-        document.getElementById("newButton").disabled = true;
-
-
-
 
 
     });

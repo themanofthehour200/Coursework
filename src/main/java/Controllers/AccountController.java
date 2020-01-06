@@ -105,9 +105,9 @@ public class AccountController {
 
             //Only returns details if the user has been found as a manager, otherwise an error is given
             if(result.next()){
-                item.put("accessLevel",result.getInt(1));
-                item.put("userID",result.getInt(2));
-                item.put("firstName",result.getString(3));
+                item.put("AccessLevel",result.getInt(1));
+                item.put("UserID",result.getInt(2));
+                item.put("FirstName",result.getString(3));
                 return item.toString();
             }else{//If no relationship between user and account is found
                 throw new Exception("User has no access to account");
