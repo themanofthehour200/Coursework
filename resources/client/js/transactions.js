@@ -21,8 +21,23 @@ function pageLoad() {
         }}
     );
 
+
+    document.getElementById("reloadButton").addEventListener("click", changeUser);
+    document.getElementById("newButton").addEventListener("click", changeUser);
+
+}
+
+function editTransaction(event){
+
     //The select list of what categories the user can access
     let target = document.getElementById( 'category' );
+
+    //Clears any categories already loaded
+    let i;
+    for(i = target.options.length - 1 ; i >= 0 ; i--)
+    {
+        target.remove(i);
+    }
 
     fetch('/Categories/list/'+ Cookies.get("UserID"), {method: 'get'}
     ).then(response => response.json()
@@ -31,17 +46,9 @@ function pageLoad() {
             let option = document.createElement( 'option' );
             option.value = category.CategoryID;
             option.text = category.CategoryName;
-            console.log(option.value + " " + option.text);
             target.add(option);
         }}
     );
-
-    document.getElementById("reloadButton").addEventListener("click", changeUser);
-    document.getElementById("newButton").addEventListener("click", changeUser);
-
-}
-
-function editTransaction(event){
 
     const id = event.target.getAttribute("data-id");
 
@@ -83,7 +90,7 @@ function editTransaction(event){
     document.getElementById("editDiv").style.display = 'block';
 }
 
-function deleteAccount(){
+function deleteAccount(event){
 
     //This checks if the user has a high enough permission to delete the account
 
@@ -128,7 +135,7 @@ function deleteAccount(){
 }
 
 
-function saveChanges() {
+function saveChanges(event) {
     event.preventDefault();
 
     //Makes sure that all parts have been filled in
@@ -157,16 +164,15 @@ function saveChanges() {
         formData.set("balanceChange",formData.get("balanceChange")*100);
 
     } else {
-        console.log("edit account");
+        console.log("edit transaction");
         formData.set("balanceChange",(formData.get("balanceChange")).replace(/[^\d.-]/g, '')*100);
         apiPath = '/Transactions/edit';
     }
 
     formData.append("accountID",Cookies.get("AccountID"));
+    formData.set("categoryID",document.getElementById("category").value);
 
-    for (let value of formData.values()) {
-        console.log(value);
-    }
+    console.log("category ID is "+formData.get("categoryID"));
 
     fetch(apiPath, {method: 'post', body: formData}
     ).then(response => response.json()
@@ -190,9 +196,6 @@ function cancelChanges(){
 
     pageLoad();
 
-    /*"""""""""""""""""""
-        UNCOMMENT THE SECTION BELOW WHEN PUTTING INTO THE COURSEWORK
-    """""""""""""""""""*/
 
     document.getElementById("listDiv").style.display = 'block';
     document.getElementById("newButton").style.display = 'block';
@@ -308,10 +311,16 @@ function changeUser(event) {
     ).then(transactions => {
 
         for (let transaction of transactions) {
-
+            //Shows is transaction is money leaving or entering account
+            let posOrNeg = "";
+            if (transaction.BalanceChange < 0){
+                posOrNeg = "+";
+            }else{
+                posOrNeg = "-";
+            }
             transactionHTML += `<tr>` +
                 `<td>${transaction.TransactionID}</td>` +
-                `<td>`+signs["GDP"] + `${(transaction.BalanceChange /100).toFixed(2)} </td>` +
+                `<td>`+posOrNeg+signs["GDP"] + `${Math.abs((transaction.BalanceChange /100).toFixed(2))} </td>` +
                 `<td>${transaction.CategoryName}</td>` +
                 `<td>${transaction.Description}</td>` +
                 `<td>${transaction.Date}</td>` +
