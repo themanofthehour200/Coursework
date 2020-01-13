@@ -90,31 +90,6 @@ function editTransaction(event){
     document.getElementById("editDiv").style.display = 'block';
 }
 
-function accountCheck(){
-
-    //Checks a user's permission level
-
-
-    //Creates a form and gets the users ID and the account ID
-    let formData = new FormData();
-    formData.append("accountID", Cookies.get("AccountID"));
-    formData.append("userID", Cookies.get("UserID"));
-
-
-    fetch('/Accounts/accessCheck', {method: 'post', body: formData}
-    ).then(response => response.json()
-    ).then(responseData => {
-        if (responseData.hasOwnProperty('error')) {
-            alert(responseData.error);
-        } else{
-            Cookies.set("AccessLevel",responseData.AccessLevel);
-            console.log("response data " + responseData.AccessLevel);
-        }
-    });
-
-}
-
-
 function saveChanges(event) {
     event.preventDefault();
 
@@ -342,35 +317,47 @@ function changeUser(event) {
 
         //checks if the user has permission to create/delete/edit transactions
 
-        accountCheck();
-        let accessLevel = Cookies.get("AccessLevel");
-        Cookies.remove("AccessLevel");
-        console.log("access " + accessLevel);
 
-        let editButtons = document.getElementsByClassName("editButton");
-        let deleteButtons = document.getElementsByClassName("deleteButton");
+        //Creates a form and gets the users ID and the account ID
+        let formData = new FormData();
+        formData.append("accountID", Cookies.get("AccountID"));
+        formData.append("userID", Cookies.get("UserID"));
 
-        if(accessLevel >= 2){
-            for (let button of editButtons) {
-                button.addEventListener("click", editTransaction);
+
+        fetch('/Accounts/accessCheck', {method: 'post', body: formData}
+        ).then(response => response.json()
+        ).then(responseData => {
+            if (responseData.hasOwnProperty('error')) {
+                alert(responseData.error);
+            } else{
+                let accessLevel = responseData.AccessLevel;
+                let editButtons = document.getElementsByClassName("editButton");
+                let deleteButtons = document.getElementsByClassName("deleteButton");
+
+                if(accessLevel >= 2){
+                    document.getElementById("accessDisplay").innerText = "Account permission sufficient to create/delete/edit transactions";
+                    for (let button of editButtons) {
+                        button.addEventListener("click", editTransaction);
+                    }
+
+                    for (let button of deleteButtons) {
+                        button.addEventListener("click", deleteTransaction);
+                    }
+
+                    document.getElementById("newButton").disabled = false;
+                }else{
+                    document.getElementById("accessDisplay").innerText = "Account permission insufficient to create/delete/edit transactions";
+                    for (let button of editButtons) {
+                        button.disabled = true;
+                    }
+                    for (let button of deleteButtons) {
+                        button.disabled = true;
+                    }
+
+                    document.getElementById("newButton").disabled = true;
+                }
             }
-
-            for (let button of deleteButtons) {
-                button.addEventListener("click", deleteTransaction);
-            }
-
-            document.getElementById("newButton").disabled = false;
-        }else{
-            for (let button of editButtons) {
-                button.disabled = true;
-            }
-            for (let button of deleteButtons) {
-                button.disabled = true;
-            }
-
-            document.getElementById("newButton").disabled = true;
-        }
-
+        });
 
     });
 

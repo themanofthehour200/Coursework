@@ -8,41 +8,42 @@ function pageLoad() {
 
     startUp();
 
-    let accountsHTML = `<table>` +
+    let categoryHTML = `<table>` +
         '<tr>' +
         '<th>ID</th>' +
-        '<th>Account Name</th>' +
-        '<th>Balance</th>' +
-        '<th>Currency</th>' +
-        '<th class="last">Options</th>' +
+        '<th>Category Name</th>' +
         '</tr>';
 
-    fetch('/Accounts/viewAll/'+ Cookies.get("UserID"), {method: 'post'}
+    fetch('/Categories/list/'+ Cookies.get("UserID"), {method: 'get'}
     ).then(response => response.json()
-    ).then(accounts => {
+    ).then(categories => {
 
-        for (let account of accounts) {
+        for (let category of categories) {
 
-            accountsHTML += `<tr>` +
-                `<td>${account.AccountID}</td>` +
-                `<td>${account.AccountName}</td>` +
-                /*Works out the value of the balance with the correct currency*/
-                `<td>`+signs[account.Currency] + `${Math.floor((account.Balance * rates[account.Currency] /100)).toFixed(2)} </td>` +
-                `<td>${account.Currency}</td>` +
+            categoryHTML += `<tr>` +
+                `<td>${category.CategoryID}</td>` +
+                `<td>${category.CategoryName}</td>` +
                 `<td class="last">` +
-                `<button class='editButton' data-id='${account.AccountID}'>Edit</button>` +
-                `<button class='deleteButton' data-id='${account.AccountID}'>Delete</button>` +
+                `<button class='editButton' id = 'category${category.AccessID}' data-id='${category.CategoryID}'>Edit</button>` +
+                `<button class='deleteButton' id = 'category${category.AccessID}' data-id='[${category.CategoryID},${category.AccessID}]'>Delete</button>` +
                 `</td>` +
                 `</tr>`;
         }
 
-        accountsHTML += '</table>';
+        categoryHTML += '</table>';
 
-        document.getElementById("listDiv").innerHTML = accountsHTML;
+        document.getElementById("listDiv").innerHTML = categoryHTML;
 
         let editButtons = document.getElementsByClassName("editButton");
         for (let button of editButtons) {
-            button.addEventListener("click", editAccount);
+            let accessLevel = parseInt((button.id).replace("category",""));
+            console.log(accessLevel);
+
+            if(accessLevel !== 0 && !isNaN(accessLevel)) {
+                button.addEventListener("click", editAccount);
+            }else{
+                button.disabled = true;
+            }
         }
 
         let deleteButtons = document.getElementsByClassName("deleteButton");
@@ -67,14 +68,12 @@ function editAccount(event){
 
         document.getElementById("editHeading").innerHTML = 'Create New Account:';
 
-        document.getElementById("accountID").value = '';
-        document.getElementById("accountName").value = '';
-        document.getElementById("balance").value = '';
-        document.getElementById("balance").disabled = false;
+        document.getElementById("categoryID").value = '';
+        document.getElementById("categoryName").value = '';
 
     } else {
 
-        fetch('/Accounts/search/' + id, {method: 'get'}
+        fetch('/Categories/search/' + id, {method: 'get'}
         ).then(response => response.json()
         ).then(responseData => {
 
@@ -82,14 +81,9 @@ function editAccount(event){
                 alert(responseData.error);
             } else {
 
-                document.getElementById("editHeading").innerHTML = 'Editing ' + responseData.AccountName + ':';
-
-                document.getElementById("accountID").value = id;
-                document.getElementById("accountName").value = responseData.AccountName;
-                document.getElementById("balance").value = String.fromCharCode(parseInt(signs[responseData.Currency+"2"],16)) + Math.floor((responseData.Balance /100*rates[responseData.Currency])).toFixed(2);
-                document.getElementById("balance").disabled = true;
-                document.getElementById("currency").value = responseData.Currency;
-
+                document.getElementById("editHeading").innerHTML = 'Editing Category Number ' + responseData.CategoryID + ':';
+                document.getElementById("categoryID").value = id;
+                document.getElementById("categoryName").value = responseData.CategoryName;
 
             }
 
@@ -101,10 +95,7 @@ function editAccount(event){
     document.getElementById("editDiv").style.display = 'block';
 }
 
-function deleteAccount(){
-
-    //This checks if the user has a high enough permission to delete the account
-
+function deleteAccount(event){
 
     //Creates a form and gets the users ID and the account ID
     let accountID = event.target.getAttribute("data-id");
@@ -116,7 +107,6 @@ function deleteAccount(){
     fetch('/Accounts/accessCheck', {method: 'post', body: formData}
     ).then(response => response.json()
     ).then(responseData => {
-        console.log("This far");
         if (responseData.hasOwnProperty('error')) {
             alert(responseData.error);
         } else if (responseData.accessLevel !== 3) {
@@ -207,10 +197,6 @@ function saveChanges() {
 
 }
 
-
-function showVals(value){
-    console.log(value);
-}
 
 function cancelChanges(){
     event.preventDefault();

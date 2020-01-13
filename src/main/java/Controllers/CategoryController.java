@@ -23,7 +23,7 @@ public class CategoryController{
     /*This returns all categories that are available to the user,
     including user-made categories and the default 10 categories*/
 
-    public String search(@PathParam("userID") Integer searchID){
+    public String list(@PathParam("userID") Integer searchID){
         System.out.println("Categories/list/" + searchID);
 
         try{
@@ -43,6 +43,37 @@ public class CategoryController{
                 list.add(item);
             }
             return list.toString();
+
+        } catch (Exception e){
+            System.out.println("Database error: " + e.getMessage());
+            return "{\"error\": \"Unable to list items, please see server console for more info.\"}";
+        }
+    }
+
+    //This returns values for a specific category
+    @GET
+    @Path("search/{categoryID}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String search(@PathParam("categoryID") Integer searchID){
+        System.out.println("Categories/search/" + searchID);
+
+        try{
+            JSONObject item = new JSONObject();
+
+            //Categories with AccessID = 0 are the default categories and so are also returned
+            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Categories WHERE CategoryID = ?");
+            ps.setInt(1,searchID);
+            ResultSet result = ps.executeQuery();
+
+            if(result.next()){
+                item.put("CategoryID", result.getInt(1));
+                item.put("CategoryName", result.getString(2));
+                item.put("AccessID", result.getInt(3));
+                return item.toString();
+            }else{
+                throw new Exception("Category not found");
+            }
+
 
         } catch (Exception e){
             System.out.println("Database error: " + e.getMessage());
