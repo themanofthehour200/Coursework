@@ -174,7 +174,6 @@ function saveChanges(event) {
 function cancelChanges(event){
     event.preventDefault();
 
-    pageLoad();
     changeUser();
 
     document.getElementById("listDiv").style.display = 'block';
