@@ -27,7 +27,7 @@ function pageLoad() {
                 `<td>${account.AccountID}</td>` +
                 `<td>${account.AccountName}</td>` +
                 /*Works out the value of the balance with the correct currency*/
-                `<td>`+signs[account.Currency] + `${Math.floor((account.Balance * rates[account.Currency] /100)).toFixed(2)} </td>` +
+                `<td>`+signs[account.Currency] + `${(Math.floor(account.Balance * rates[account.Currency])/100).toFixed(2)} </td>` +
                 `<td>${account.Currency}</td>` +
                 `<td class="last">` +
                 `<button class='editButton' data-id='${account.AccountID}'>Edit</button>` +
@@ -86,9 +86,11 @@ function editAccount(event){
 
                 document.getElementById("accountID").value = id;
                 document.getElementById("accountName").value = responseData.AccountName;
-                document.getElementById("balance").value = String.fromCharCode(parseInt(signs[responseData.Currency+"2"],16)) + Math.floor((responseData.Balance /100*rates[responseData.Currency])).toFixed(2);
+                document.getElementById("balance").value = String.fromCharCode(parseInt(signs[responseData.Currency+"2"],16)) +
+                    (Math.floor(responseData.Balance * rates[responseData.Currency])/100).toFixed(2);
                 document.getElementById("balance").disabled = true;
                 document.getElementById("currency").value = responseData.Currency;
+                document.getElementById("originalCurrency").value = responseData.Currency;
 
 
             }
@@ -170,6 +172,7 @@ function saveChanges() {
     const id = document.getElementById("accountID").value;
     const form = document.getElementById("accountForm");
     const formData = new FormData(form);
+
     //formData.set("balance",document.getElementById("balance").value);
     formData.append("userID", Cookies.get("UserID"));
 
@@ -183,13 +186,12 @@ function saveChanges() {
 
     } else {
         console.log("edit account");
-        formData.set("balance",Math.ceil((formData.get("balance").replace(/[^\d.-]/g, ''))*100/rates[formData.get("currency")]));
+        console.log(formData.get("currency"));
+        console.log(formData.get("balance").replace(/[^\d.-]/g, '')/*/rates[formData.get("currency"));*/);
+        formData.set("balance",Math.ceil((formData.get("balance").replace(/[^\d.-]/g, ''))/rates[formData.get("originalCurrency")]*100));
         apiPath = '/Accounts/edit';
     }
 
-    for (let value of formData.values()) {
-        console.log(value);
-    }
 
     fetch(apiPath, {method: 'post', body: formData}
     ).then(response => response.json()

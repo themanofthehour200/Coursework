@@ -44,7 +44,11 @@
     <div id="editDiv">
         <h2 id="editHeading"></h2>
         <form id="accountForm">
+
             <input type="hidden" name="accountID" id="accountID">
+            <!--This variable is used for converting between currencies-->
+            <input type="hidden" name="originalCurrency" id="originalCurrency">
+
             <div>
                 <label for="accountName" class="label">Account Name:</label>
                 <input type="text" name="accountName" id="accountName">
