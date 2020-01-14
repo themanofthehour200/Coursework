@@ -78,7 +78,7 @@ th.last {
 
 
 
-.editButton, .deleteButton, #saveButton, #cancelButton {
+.editButton, .deleteButton, #saveButton, #cancelButton, #newButton{
     color: black;
     font-size: 14px;
     border: none;
@@ -93,6 +93,16 @@ th.last {
 
 .editButton:hover {
     background-color: grey;
+}
+
+.editButton:disabled, .deleteButton:disabled{
+    background-color:black;
+    color: yellow;
+}
+
+.editButton:disabled:hover, .deleteButton:disabled:hover{
+    background-color:#FE0101;
+    color: yellow;
 }
 
 #newButton {

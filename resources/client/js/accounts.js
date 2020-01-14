@@ -258,8 +258,6 @@ function startUp(){
     let userID = Cookies.get("UserID");
     let token = Cookies.get("Token");
 
-    console.log("User retrieved");
-
     let formData = new FormData();
     formData.append("userID", userID);
     formData.append("token", token);
@@ -275,8 +273,6 @@ function startUp(){
         } else if (!responseData.found) {
             console.log("Invalid log on details");
             window.location.href = '/client/index.html';
-        } else {
-            console.log("User validated")
         }
     });
 

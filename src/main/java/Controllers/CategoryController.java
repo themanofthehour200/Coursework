@@ -93,13 +93,19 @@ public class CategoryController{
             out.println("/Categories/new");
 
             //This is to ensure that no user has access to multiple categories with the same name
-            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Categories WHERE CategoryName = ? AND AccessID = ? OR AccessID = 0");
+            PreparedStatement ps = main.db.prepareStatement("SELECT CategoryID FROM Categories WHERE CategoryName = ? AND AccessID = ? OR CategoryName = ? AND AccessID = 0");
             ps.setString(1,categoryName);
             ps.setInt(2,accessID);
+            ps.setString(3,categoryName);
+
             ResultSet result = ps.executeQuery();
-            if(result.next()) throw new Exception("Category already exists");
+            if(result.next()){
+                out.println("going to a return statement");
+                return"{\"error\": \"category already exists\"}";
+            }
 
             //Preparing to insert the new category into the database
+            out.println("inserting category");
             PreparedStatement ps2 = main.db.prepareStatement("INSERT INTO Categories (CategoryID, CategoryName, AccessID) VALUES (?,?,?)");
 
 
@@ -112,6 +118,31 @@ public class CategoryController{
         } catch (Exception e){
             out.println("Error when inputting category into database, error code\n" + e.getMessage());
             return "{\"error\": \"Unable to create new item, please see server console for more info.\"}";
+        }
+    }
+
+    @POST
+    @Path("edit")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    //This method updates an already created budget
+    public String update(@FormDataParam("categoryID") int categoryID, @FormDataParam("categoryName") String categoryName){
+        try{
+
+            System.out.println("Categories/edit id = " + categoryID);
+
+
+            PreparedStatement ps = main.db.prepareStatement("UPDATE Categories SET CategoryName = ? WHERE CategoryID = ?");
+
+            ps.setString(1,categoryName);
+            ps.setInt(2,categoryID);
+
+            ps.executeUpdate();
+            return "{\"status\": \"OK\"}";
+
+        } catch (Exception e){
+            out.println("Error updating category, error message:\n" + e.getMessage());
+            return "{\"error\": \"Unable to update item, please see server console for more info.\"}";
         }
     }
 

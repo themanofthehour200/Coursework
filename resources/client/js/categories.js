@@ -25,7 +25,7 @@ function pageLoad() {
                 `<td>${category.CategoryName}</td>` +
                 `<td class="last">` +
                 `<button class='editButton' id = 'category${category.AccessID}' data-id='${category.CategoryID}'>Edit</button>` +
-                `<button class='deleteButton' id = 'category${category.AccessID}' data-id='[${category.CategoryID},${category.AccessID}]'>Delete</button>` +
+                `<button class='deleteButton' id = 'category${category.AccessID}' data-id='${category.CategoryID}'>Delete</button>` +
                 `</td>` +
                 `</tr>`;
         }
@@ -37,36 +37,46 @@ function pageLoad() {
         let editButtons = document.getElementsByClassName("editButton");
         for (let button of editButtons) {
             let accessLevel = parseInt((button.id).replace("category",""));
-            console.log(accessLevel);
 
             if(accessLevel !== 0 && !isNaN(accessLevel)) {
-                button.addEventListener("click", editAccount);
+                button.addEventListener("click", editCategory);
             }else{
+                button.title = "Cannot edit category";
                 button.disabled = true;
             }
         }
 
         let deleteButtons = document.getElementsByClassName("deleteButton");
         for (let button of deleteButtons) {
-            button.addEventListener("click", deleteAccount);
+            let accessLevel = parseInt((button.id).replace("category",""));
+
+            if(accessLevel !== 0 && !isNaN(accessLevel)) {
+                button.addEventListener("click", deleteCategory);
+            }else{
+                button.title = "Cannot delete category";
+                button.disabled = true;
+            }
         }
 
     });
 
+    document.getElementById("newButton").addEventListener("click",editCategory);
     document.getElementById("saveButton").addEventListener("click", saveChanges);
     document.getElementById("cancelButton").addEventListener("click", cancelChanges);
 
 
 }
 
-function editAccount(event){
+function editCategory(event){
 
     const id = event.target.getAttribute("data-id");
+
+    document.getElementById("accessID").value = Cookies.get("UserID");
 
     //If no id exists it means that tis function is being called by the 'create new account' button instead
     if (id === null) {
 
-        document.getElementById("editHeading").innerHTML = 'Create New Account:';
+        document.getElementById("editHeading").innerHTML = 'Create New Category:';
 
         document.getElementById("categoryID").value = '';
         document.getElementById("categoryName").value = '';
@@ -95,90 +105,51 @@ function editAccount(event){
     document.getElementById("editDiv").style.display = 'block';
 }
 
-function deleteAccount(event){
+function deleteCategory(event){
 
     //Creates a form and gets the users ID and the account ID
-    let accountID = event.target.getAttribute("data-id");
+    let categoryID = event.target.getAttribute("data-id");
     let formData = new FormData();
-    formData.append("accountID", accountID);
-    formData.append("userID", Cookies.get("UserID"));
+    formData.append("categoryID", categoryID);
+    console.log(categoryID);
 
+    const ok = confirm("Are you sure?");
+    if(ok) {
 
-    fetch('/Accounts/accessCheck', {method: 'post', body: formData}
-    ).then(response => response.json()
-    ).then(responseData => {
-        if (responseData.hasOwnProperty('error')) {
-            alert(responseData.error);
-        } else if (responseData.accessLevel !== 3) {
-            alert("You do not have a high enough access level on this account to complete this action");
-        } else {
-            const ok = confirm("Are you sure?");
-
-            if (ok === true) {
-
-                let formData = new FormData();
-                formData.append("accountID", accountID);
-
-                fetch('/Accounts/delete', {method: 'post', body: formData}
-                ).then(response => response.json()
-                ).then(responseData => {
-                        if (responseData.hasOwnProperty('error')) {
-                            alert(responseData.error);
-                        } else {
-                            console.log("Account deleted");
-                            pageLoad();
-                        }
-                    }
-                );
+        fetch('/Categories/delete', {method: 'post', body: formData}
+        ).then(response => response.json()
+        ).then(responseData => {
+            if (responseData.hasOwnProperty('error')) {
+                alert(responseData.error);
+            } else {
+                pageLoad();
             }
-        }
-    });
+        });
+    }
 }
 
 
 function saveChanges() {
     event.preventDefault();
 
-    document.getElementById("balance").disabled=false;
-
     //Makes sure that all parts have been filled in
-    if (document.getElementById("accountName").value.trim() === '') {
+    if (document.getElementById("categoryName").value.trim() === '') {
         alert("Please provide an account name.");
         return;
     }
 
-    if (document.getElementById("balance").value.trim() === '') {
-        alert("Please provide a balance.");
-        return;
-    }
-
-    if (document.getElementById("currency").value.trim() === '') {
-        alert("Please provide a currency.");
-        return;
-    }
-
-    const id = document.getElementById("accountID").value;
-    const form = document.getElementById("accountForm");
+    const id = document.getElementById("categoryID").value;
+    const form = document.getElementById("categoryForm");
     const formData = new FormData(form);
-    //formData.set("balance",document.getElementById("balance").value);
-    formData.append("userID", Cookies.get("UserID"));
 
-    //Creates account if a new account and updates the current account if it's being edited
+    console.log(formData.get("accessID"));
+
+    //Creates category if a new category and updates the current category if it's being edited
     let apiPath = '';
     if (id === '') {
-        console.log("new account");
-        apiPath = '/Accounts/new';
-        console.log(Math.floor((formData.get("balance")*100)/rates[formData.get("currency")]));
-        formData.set("balance",Math.ceil((formData.get("balance")*100)/rates[formData.get("currency")]));
-
+        apiPath = '/Categories/new';
     } else {
-        console.log("edit account");
-        formData.set("balance",Math.ceil((formData.get("balance").replace(/[^\d.-]/g, ''))*100/rates[formData.get("currency")]));
-        apiPath = '/Accounts/edit';
-    }
-
-    for (let value of formData.values()) {
-        console.log(value);
+        apiPath = '/Categories/edit';
     }
 
     fetch(apiPath, {method: 'post', body: formData}
@@ -242,7 +213,6 @@ function startUp(){
     let userID = Cookies.get("UserID");
     let token = Cookies.get("Token");
 
-    console.log("User retrieved");
 
     let formData = new FormData();
     formData.append("userID", userID);
@@ -259,8 +229,6 @@ function startUp(){
         } else if (!responseData.found) {
             console.log("Invalid log on details");
             window.location.href = '/client/index.html';
-        } else {
-            console.log("User validated")
         }
     });
 
