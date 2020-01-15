@@ -78,7 +78,7 @@ th.last {
 
 
 
-.editButton, .deleteButton, #saveButton, #cancelButton {
+.editButton, .deleteButton,.deleteManagerButton, #saveButton, #cancelButton {
     color: black;
     font-size: 14px;
     border: none;
@@ -104,12 +104,12 @@ th.last {
     background-color: dodgerblue;
 }
 
-.deleteButton, #cancelButton {
+.deleteButton,.deleteManagerButton, #cancelButton {
     background-color: indianred;
     margin-left: 10px;
 }
 
-.deleteButton:hover, #cancelButton:hover {
+.deleteButton:hover,.deleteManagerButton:hover #cancelButton:hover {
     background-color: firebrick;
 }
 
@@ -122,9 +122,25 @@ th.last {
 }
 
 form div {
-    width: 100%;
+    width: 80%;
     text-align: left;
     margin-bottom: 20px;
+}
+
+.column {
+    float: left;
+    padding: 10px;
+    height: 300px; /* Should be removed. Only for demonstration */
+}
+
+.left {
+    background-color: #e5592e;
+    width: 25%;
+}
+
+.right {
+    width: 75%;
+    background-color: red;
 }
 
 .label {
@@ -139,13 +155,20 @@ form div {
 
 #editDiv {
     display: none;
+    content: "";
+    /*display: table;*/
+    clear: both;
 }
 
 table {
-    width: 100%;
+    width: 90%;
 }
 
-.fruitColour {
-    border-radius: 8px;
-    padding-left: 64px;
+
+* {
+    box-sizing: border-box;
+}
+
+#currentManagerTitle{
+    text-align: left;
 }

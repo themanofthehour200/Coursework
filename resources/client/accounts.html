@@ -42,37 +42,48 @@
 
     <!--The 'edit' screen for when the user wishes to edit an account-->
     <div id="editDiv">
-        <h2 id="editHeading"></h2>
-        <form id="accountForm">
+        <div class = "column left">
+            <h2 id="editHeading"></h2>
+            <form id="accountForm">
 
-            <input type="hidden" name="accountID" id="accountID">
-            <!--This variable is used for converting between currencies-->
-            <input type="hidden" name="originalCurrency" id="originalCurrency">
+                <input type="hidden" name="accountID" id="accountID">
+                <!--This variable is used for converting between currencies-->
+                <input type="hidden" name="originalCurrency" id="originalCurrency">
 
-            <div>
-                <label for="accountName" class="label">Account Name:</label>
-                <input type="text" name="accountName" id="accountName">
-            </div>
-            <div>
-                <label for="balance" class="label">Balance:</label>
-                <input type="text" name="balance" id="balance">
-            </div>
+                <div>
+                    <label for="accountName" class="label">Account Name:</label>
+                    <input type="text" name="accountName" id="accountName">
+                </div>
+                <div>
+                    <label for="balance" class="label">Balance:</label>
+                    <input type="text" name="balance" id="balance">
+                </div>
 
-            <!--Slightly different input for currency as it is a drop down list-->
-            <div>
-                <label for="currency" class="label">Currency:</label>
-                <select name = "currency" id = "currency">
-                    <option value="GDP" selected>GDP (&#163)</option>
-                    <option value="USD">USD ($)</option>
-                    <option value="EUR">EUR (&#8364)</option>
-                </select>
-            </div>
+                <!--Slightly different input for currency as it is a drop down list-->
+                <div>
+                    <label for="currency" class="label">Currency:</label>
+                    <select name = "currency" id = "currency">
+                        <option value="GDP" selected>GDP (&#163)</option>
+                        <option value="USD">USD ($)</option>
+                        <option value="EUR">EUR (&#8364)</option>
+                    </select>
+                </div>
 
-            <div>
-                <input type="submit" value="Save" id="saveButton">
-                <input type="submit" value="Cancel" id="cancelButton">
-            </div>
-        </form>
+                <div>
+                    <input type="submit" value="Save" id="saveButton">
+                    <input type="submit" value="Cancel" id="cancelButton">
+                </div>
+            </form>
+        </div>
+        <div class = "column right" id = "editManagerPortal">
+            <h2>Editing Account Managers</h2>
+            <h3 id ="currentManagerTitle">Current Managers:</h3>
+
+            <!--The list of all of the users accounts that they currently have access to-->
+            <div id ="managerList"></div>
+
+            <button id="addManager" class="editButton">Create Account</button>
+        </div>
     </div>
 
 

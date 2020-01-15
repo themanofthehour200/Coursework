@@ -31,17 +31,21 @@ public class AccountManagersController{
             JSONArray list = new JSONArray();
 
             //This returns all of the details for who can manage an account
-            PreparedStatement ps = main.db.prepareStatement("SELECT * FROM AccountManagers WHERE AccountID = ?");
+            PreparedStatement ps = main.db.prepareStatement("SELECT AccountManagers.AccessLevel, AccountManagers.ControlID, Users.UserID, Users.FirstName, Users.Surname, Users.Email FROM AccountManagers " +
+                    "INNER JOIN Users ON Users.UserID= AccountManagers.ManagerID AND AccountManagers.AccountID = ?");
+
             ps.setInt(1,searchID);
             ResultSet result = ps.executeQuery();
 
             //For however many rows the results are added
             while(result.next()){
                 JSONObject item = new JSONObject();
-                item.put("ControlID", result.getInt(1));
-                item.put("AccountID", result.getInt(2));
-                item.put("ManagerID", result.getInt(3));
-                item.put("AccessLevel", result.getInt(4));
+                item.put("AccessLevel", result.getInt(1));
+                item.put("ControlID",result.getInt(2));
+                item.put("UserID", result.getInt(3));
+                item.put("FirstName", result.getString(4));
+                item.put("Surname", result.getString(5));
+                item.put("Email", result.getString(6));
                 list.add(item);
             }
             return list.toString();
@@ -112,10 +116,13 @@ public class AccountManagersController{
 
     @POST
     @Path("delete")
+
     /*The reason that this uses form data instead of having the data be sent via the API path in the
       path name is that the form is more secure*/
+
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
+
     /*This method removes an manager from an account. In phase 3 this method should only be called
     *once the AccessLevel of the user has been checked, as only manager with access level 3
     * can remove other managers from the account*/

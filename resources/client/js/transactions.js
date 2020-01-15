@@ -347,10 +347,12 @@ function changeUser(event) {
                     document.getElementById("accessDisplay").innerText = "Account permission sufficient to create/delete/edit transactions";
                     for (let button of editButtons) {
                         button.addEventListener("click", editTransaction);
+                        button.disabled = false;
                     }
 
                     for (let button of deleteButtons) {
                         button.addEventListener("click", deleteTransaction);
+                        button.disabled = false;
                     }
 
                     document.getElementById("newButton").disabled = false;

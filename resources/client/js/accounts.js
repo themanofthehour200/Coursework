@@ -66,6 +66,7 @@ function editAccount(event){
     if (id === null) {
 
         document.getElementById("editHeading").innerHTML = 'Create New Account:';
+        document.getElementById("editManagerPortal").style.display = 'none';
 
         document.getElementById("accountID").value = '';
         document.getElementById("accountName").value = '';
@@ -73,6 +74,7 @@ function editAccount(event){
         document.getElementById("balance").disabled = false;
 
     } else {
+        document.getElementById("editManagerPortal").style.display = 'block';
 
         fetch('/Accounts/search/' + id, {method: 'get'}
         ).then(response => response.json()
@@ -96,16 +98,122 @@ function editAccount(event){
             }
 
         });
-
     }
+    //Formatting all managers relating to the account
+    let managerHTML = `<table>` +
+        '<tr>' +
+        '<th>User ID</th>' +
+        '<th>Name</th>' +
+        '<th>Email</th>' +
+        '<th>Access Level</th>' +
+        '</tr>';
+
+    fetch('/AccountManagers/list/'+ Cookies.get("AccountID"), {method: 'get'}
+    ).then(response => response.json()
+    ).then(managers => {
+
+        for (let manager of managers) {
+
+/*            console.log("userid: " + manager.UserID);
+            console.log("firstname: " + manager.FirstName);
+            console.log("surname: " + manager.Surname);
+            console.log("email: " + manager.Email);
+            console.log("uaccess levelserid: " + manager.AccessLevel);*/
+
+            managerHTML += `<tr>` +
+                `<td>${manager.UserID}</td>` +
+                `<td>${manager.FirstName + " " + manager.Surname}</td>` +
+                `<td>${manager.Email}</td>` +
+                `<td>${manager.AccessLevel}</tdclass>` +
+                `<td class="last">` +
+                `<button class='deleteManagerButton' data-id='${manager.ControlID}'>Delete</button>` +
+                `</td>` +
+                `</tr>`;
+        }
+
+        managerHTML += '</table>';
+
+        document.getElementById("managerList").innerHTML = managerHTML;
+
+        //checks if the user has permission to create/delete/edit transactions
+
+
+        //Creates a form and gets the users ID and the account ID
+        let formData = new FormData();
+        formData.append("accountID", Cookies.get("AccountID"));
+        formData.append("userID", Cookies.get("UserID"));
+
+
+        fetch('/Accounts/accessCheck', {method: 'post', body: formData}
+        ).then(response => response.json()
+        ).then(responseData => {
+            if (responseData.hasOwnProperty('error')) {
+                alert(responseData.error);
+            } else{
+                let accessLevel = responseData.AccessLevel;
+                let deleteButtons = document.getElementsByClassName("deleteManagerButton");
+
+                if(accessLevel === 3){
+                    for (let button of deleteButtons) {
+                        button.addEventListener("click", deleteManager);
+                        button.disabled = false;
+                    }
+
+                    document.getElementById("addManager").disabled = false;
+                }else{
+
+                    for (let button of deleteButtons) {
+                        button.disabled = true;
+                    }
+
+                    document.getElementById("addManager").disabled = true;
+                }
+            }
+        });
+
+    });
+
+    /*document.getElementById("saveButton").addEventListener("click", saveChanges);
+    document.getElementById("cancelButton").addEventListener("click", cancelChanges);*/
+
+
     document.getElementById("listDiv").style.display = 'none';
     document.getElementById("newButton").style.display = 'none';
     document.getElementById("editDiv").style.display = 'block';
 }
 
-function deleteAccount(){
+function deleteManager(){
 
-    //This checks if the user has a high enough permission to delete the account
+
+    //Creates a form and gets the users ID and the account ID
+    let controlID = event.target.getAttribute("data-id");
+    let formData = new FormData();
+    formData.append("controlID", controlID);
+
+    for(let pair of formData.entries()) {
+        console.log(pair[0]+ ', '+ pair[1]);
+    }
+
+
+    const ok = confirm("Are you sure?");
+
+    if (ok === true) {
+
+        fetch('/AccountManagers/delete', {method: 'post', body: formData}
+        ).then(response => response.json()
+        ).then(responseData => {
+                if (responseData.hasOwnProperty('error')) {
+                    alert(responseData.error);
+                } else {
+                    console.log("Manager deleted");
+                    editAccount();
+                }
+            }
+        );
+    }
+}
+
+function deleteAccount(event){
 
 
     //Creates a form and gets the users ID and the account ID
@@ -291,4 +399,5 @@ function displayName(firstname, surname){
     document.getElementById("logInMessage").innerHTML = logInMessage;
 
 }
+
 
