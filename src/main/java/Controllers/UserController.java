@@ -261,7 +261,11 @@ public class UserController {
 
         } catch (Exception e){
             out.println("Error updating user, error message:\n" + e.getMessage());
-            return "{\"error\": \"Unable to update item, please see server console for more info.\"}";
+            if(e.getMessage().equalsIgnoreCase("[SQLITE_CONSTRAINT]  Abort due to constraint violation (UNIQUE constraint failed: Users.Email)")){
+                return "{\"error\": \"User with that email already exists\"}";
+            }else {
+                return "{\"error\": \"Unable to update item, please see server console for more info.\"}";
+            }
         }
     }
 

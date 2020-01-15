@@ -7,24 +7,29 @@ function pageLoad() {
 
 }
 
-function edit(event){
+function edit(event) {
     console.log("Edit function");
 
     event.preventDefault(); //cancels the event if it is cancelable, meaning that the default action that belongs to the event will not occur.
 
     const form = document.getElementById("editForm");
     const formData = new FormData(form);
+    formData.set("userID",Cookies.get("UserID"));
 
-    fetch("/Users/edit", {method: 'post', body: formData}
-    ).then(response => response.json()
-    ).then(responseData => {
-        if (responseData.hasOwnProperty('error')) {
-            alert(responseData.error);
-        } else {
-            alert("User edited\nReturning to accounts page")
-            window.location.href = '/client/accounts.html';
-        }
-    });
+    if (formData.get("password") !== formData.get("passDuplicate")) {
+        alert("Passwords don't match");
+    } else {
+        fetch("/Users/edit", {method: 'post', body: formData}
+        ).then(response => response.json()
+        ).then(responseData => {
+            if (responseData.hasOwnProperty('error')) {
+                alert(responseData.error);
+            } else {
+                alert("User edited\nReturning to accounts page")
+                window.location.href = '/client/accounts.html';
+            }
+        });
+    }
 }
 
 function back(){window.location.href = '/client/accounts.html';}
