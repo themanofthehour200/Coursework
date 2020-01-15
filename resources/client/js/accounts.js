@@ -181,6 +181,7 @@ function saveChanges() {
         console.log("new account");
         apiPath = '/Accounts/new';
         console.log(Math.floor((formData.get("balance")*100)/rates[formData.get("currency")]));
+        // noinspection JSCheckFunctionSignatures
         formData.set("balance",Math.ceil((formData.get("balance")*100)/rates[formData.get("currency")]));
 
     } else {

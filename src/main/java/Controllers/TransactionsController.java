@@ -162,9 +162,10 @@ public class TransactionsController {
                     "Date = ?,  StandingOrderID = ?, Currency = ? WHERE TransactionID = ?");
 
             fillColumn(accountID, balanceChange, categoryID, description, date, standingOrderID, currency, ps2, 0);
-            ps2.setInt(7, transactionID);
+            ps2.setInt(8, transactionID);
             ps2.executeUpdate();
 
+            out.println("All other changes made");
 
             /*Calls the method changingBalance. This will update the account balance
              to the correct amount once the transaction has been created. It returns a boolean
@@ -221,7 +222,7 @@ public class TransactionsController {
     /*This method is used to efficiently fill the ps,
     as many API paths have nearly identical code within the class
     when filling in prepared statement*/
-    private static void fillColumn(int accountID, int balanceChange, int categoryID, String description, String date, int standingOrderID,String currency, PreparedStatement ps, int column) throws SQLException {
+    private static void fillColumn(int accountID, int balanceChange, int categoryID, String description, String date, int standingOrderID, String currency, PreparedStatement ps, int column) throws SQLException {
 
         ps.setInt(1 + column, accountID);
         ps.setInt(2 + column, balanceChange);
@@ -250,8 +251,10 @@ public class TransactionsController {
             ps2.setInt(2, accountID);
             ps2.executeUpdate();
 
+
             return true;
         } catch (Exception e) {
+            out.println(e);
             return false;
         }
 

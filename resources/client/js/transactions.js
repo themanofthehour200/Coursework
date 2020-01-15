@@ -78,7 +78,8 @@ function editTransaction(event){
                 document.getElementById("editHeading").innerHTML = 'Editing transaction number ' + responseData.TransactionID + ':';
 
                 document.getElementById("transactionID").value = id;
-                document.getElementById("balanceChange").value = String.fromCharCode(parseInt(signs["GDP2"],16)) + (responseData.BalanceChange /100).toFixed(2);
+                document.getElementById("balanceChange").value = String.fromCharCode(parseInt(signs[responseData.Currency+"2"],16)) +
+                    (Math.floor(responseData.BalanceChange * rates[responseData.Currency])/100).toFixed(2);
                 document.getElementById("currency").value = responseData.Currency;
                 document.getElementById("currency").disabled = true;
                 document.getElementById("category").value = responseData.CategoryID;
@@ -118,7 +119,7 @@ function saveChanges(event) {
     let apiPath = '';
     if (id === '') {
         apiPath = '/Transactions/create';
-        formData.set("balanceChange",formData.get("balanceChange")*100);
+        formData.set("balanceChange",Math.ceil((formData.get("balance")*100)/rates[formData.get("currency")]));
         console.log(formData.get("balanceChange"));
 
     } else {
@@ -127,7 +128,11 @@ function saveChanges(event) {
     }
 
     formData.append("accountID",Cookies.get("AccountID"));
-    formData.set("categoryID",document.getElementById("category").value);
+    formData.append("currency",document.getElementById("currency").value);
+
+    for (let pair of formData.entries()) {
+        console.log(pair[0]+ ', ' + pair[1]);
+    }
 
 
     fetch(apiPath, {method: 'post', body: formData}
