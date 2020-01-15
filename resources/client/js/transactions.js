@@ -23,7 +23,7 @@ function pageLoad() {
 
 
     document.getElementById("reloadButton").addEventListener("click", changeUser);
-    document.getElementById("newButton").addEventListener("click", changeUser);
+    document.getElementById("newButton").addEventListener("click", editTransaction);
 
 }
 
@@ -58,7 +58,7 @@ function editTransaction(event){
         document.getElementById("editHeading").innerHTML = 'Create New Transaction:';
 
         document.getElementById("transactionID").value = '';
-       /* document.getElementById("balanceChange").value = '';*/
+        document.getElementById("balanceChange").value = '';
         document.getElementById("currency").value = '';
         document.getElementById("currency").disabled = false;
         document.getElementById("description").value = '';
@@ -82,7 +82,7 @@ function editTransaction(event){
                     (Math.floor(responseData.BalanceChange * rates[responseData.Currency])/100).toFixed(2);
                 document.getElementById("currency").value = responseData.Currency;
                 document.getElementById("currency").disabled = true;
-                document.getElementById("category").value = responseData.CategoryID;
+                document.getElementById("category").selected = responseData.CategoryID;
                 document.getElementById("description").value = responseData.Description;
                 document.getElementById("date").value = responseData["Date"];
             }
@@ -91,7 +91,7 @@ function editTransaction(event){
 
     }
     document.getElementById("listDiv").style.display = 'none';
-    document.getElementById("newButton").style.display = 'none';
+/*    document.getElementById("newButton").style.display = 'none';*/
     document.getElementById("editDiv").style.display = 'block';
 }
 
@@ -114,21 +114,25 @@ function saveChanges(event) {
     const formData = new FormData(form);
 
     formData.append("standingOrderID", "0");
+    formData.append("currency",document.getElementById("currency").value);
+
 
     //Creates account if a new transaction or updates the current transaction if it's being edited
+
     let apiPath = '';
+    let convertedAmount;
     if (id === '') {
         apiPath = '/Transactions/create';
-        formData.set("balanceChange",Math.ceil((formData.get("balance")*100)/rates[formData.get("currency")]));
-        console.log(formData.get("balanceChange"));
+        convertedAmount = Math.sign(formData.get("balanceChange")) * Math.ceil(Math.abs((formData.get("balanceChange")*100)/rates[formData.get("currency")]));
 
     } else {
-        formData.set("balanceChange",(formData.get("balanceChange")).replace(/[^\d.-]/g, '')*100);
         apiPath = '/Transactions/edit';
+        convertedAmount =  Math.sign(formData.get("balanceChange")) * Math.ceil(Math.abs((formData.get("balanceChange").replace(/[^\d.-]/g, '')*100)/rates[formData.get("currency")]));
     }
 
+    formData.set("balanceChange",convertedAmount);
     formData.append("accountID",Cookies.get("AccountID"));
-    formData.append("currency",document.getElementById("currency").value);
+
 
     for (let pair of formData.entries()) {
         console.log(pair[0]+ ', ' + pair[1]);
@@ -143,7 +147,7 @@ function saveChanges(event) {
             alert(responseData.error);
         } else {
             document.getElementById("listDiv").style.display = 'block';
-            document.getElementById("newButton").style.display = 'block';
+/*            document.getElementById("newButton").style.display = 'block';*/
             document.getElementById("editDiv").style.display = 'none';
             pageLoad();
             changeUser();
@@ -158,7 +162,7 @@ function cancelChanges(event){
     changeUser();
 
     document.getElementById("listDiv").style.display = 'block';
-    document.getElementById("newButton").style.display = 'block';
+/*    document.getElementById("newButton").style.display = 'block';*/
     document.getElementById("editDiv").style.display = 'none';
 }
 
@@ -281,13 +285,13 @@ function changeUser(event) {
 
 
     //Formatting all transactions relating to the account
-    let transactionHTML = `<table>` +
+    let transactionHTML = `<table id="transactionTable">` +
         '<tr>' +
-        '<th>ID</th>' +
-        '<th>Amount</th>' +
-        '<th>Category</th>' +
+        '<th onclick="sortTable(0)">ID</th>' +
+        '<th onclick="sortTable(1)">Amount</th>' +
+        '<th onclick="sortTable(2)">Category</th>' +
         '<th>Description</th>' +
-        '<th>Date</th>' +
+        '<th onclick="sortTable(4)">Date</th>' +
         '<th class="last">Options</th>' +
         '</tr>';
 
@@ -368,5 +372,94 @@ function changeUser(event) {
 
     document.getElementById("saveButton").addEventListener("click", saveChanges);
     document.getElementById("cancelButton").addEventListener("click", cancelChanges);
+}
+
+//This function allows the table of transactions to be sorted by its headers
+function sortTable(n) {
+    let table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+
+    table = document.getElementById("transactionTable");
+    switching = true;
+
+    // Set the sorting direction to ascending:
+    dir = "asc";
+
+    /* Make a loop that will continue until
+    no switching has been done: */
+    while (switching) {
+
+
+        // Start by saying: no switching is done:
+        switching = false;
+        rows = table.rows;
+        /* Loop through all table rows (except the
+        first, which contains table headers): */
+
+        for (i = 1; i < (rows.length - 1); i++) {
+            // Start by saying there should be no switching:
+            shouldSwitch = false;
+
+            /* Get the two elements you want to compare,
+            one from current row and one from the next: */
+            x = rows[i].getElementsByTagName("TD")[n];
+            y = rows[i + 1].getElementsByTagName("TD")[n];
+
+            //Set the way in which you sort depending on what depending header you are sorting by
+            let ascCheck, descCheck;
+
+            switch(n){
+                case 0:
+                    ascCheck = Number(x.innerHTML) > Number(y.innerHTML);
+                    descCheck = Number(x.innerHTML) < Number(y.innerHTML);
+                    break;
+                case 1:
+                    ascCheck = Number(x.innerHTML.replace(/[^\d.-]/g, '')) > Number(y.innerHTML.replace(/[^\d.-]/g, ''));
+                    descCheck = Number(x.innerHTML.replace(/[^\d.-]/g, '')) < Number(y.innerHTML.replace(/[^\d.-]/g, ''));
+                    break;
+                case 2:
+                    ascCheck = x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase();
+                    descCheck = x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase();
+                    break;
+                case 4:
+                    let date1 = new Date(x.innerHTML);
+                    let date2 = new Date(y.innerHTML);
+                    ascCheck = date1 > date2;
+                    descCheck = date1 < date2;
+                    break;
+            }
+
+            /* Check if the two rows should switch place,
+            based on the direction, asc or desc: */
+            if (dir === "asc") {
+                if (ascCheck) {
+                    // If so, mark as a switch and break the loop:
+                    shouldSwitch = true;
+                    break;
+                }
+            } else if (dir === "desc") {
+                if (descCheck) {
+                    // If so, mark as a switch and break the loop:
+                    shouldSwitch = true;
+                    break;
+                }
+            }
+        }
+        if (shouldSwitch) {
+            /* If a switch has been marked, make the switch
+            and mark that a switch has been done: */
+            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+            switching = true;
+
+            // Each time a switch is done, increase this count by 1:
+            switchcount ++;
+        } else {
+            /* If no switching has been done AND the direction is "asc",
+            set the direction to "desc" and run the while loop again. */
+            if (switchcount === 0 && dir === "asc") {
+                dir = "desc";
+                switching = true;
+            }
+        }
+    }
 }
 

@@ -78,7 +78,7 @@ th.last {
     text-align: right;
 }
 
-.editButton, .deleteButton, #saveButton, #cancelButton ,#reloadButton{
+.editButton, .deleteButton, #saveButton, #cancelButton ,#reloadButton, #newButton{
     color: black;
     font-size: 14px;
     border: none;
