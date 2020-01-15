@@ -23,12 +23,12 @@ public class TransactionsController {
 
     //This creates a new transaction
     public String insert(@FormDataParam("categoryID") int categoryID, @FormDataParam("date") String date, @FormDataParam("accountID") int accountID, @FormDataParam("balanceChange") int balanceChange,
-                         @FormDataParam("description") String description, @FormDataParam("standingOrderID") int standingOrderID) {
+                         @FormDataParam("description") String description, @FormDataParam("standingOrderID") int standingOrderID, @FormDataParam("currency") String currency) {
 
         try {
             //Creates the ps for the SQL to create the transaction in the Transactions tables
             PreparedStatement ps = main.db.prepareStatement("INSERT INTO Transactions (TransactionID, AccountID, BalanceChange, CategoryID," +
-                    " Description, Date, StandingOrderID) VALUES (?,?,?,?,?,?,?)"); //This adds the transaction to the transaction database
+                    " Description, Date, StandingOrderID, Currency) VALUES (?,?,?,?,?,?,?,?)"); //This adds the transaction to the transaction database
 
             //makes sure that a transaction with a value of zero isn't done, as this is a pointless transaction to make and may lead to errors
             if (balanceChange == 0) throw new Exception("Transaction cannot be for a value of 0");
@@ -38,7 +38,7 @@ public class TransactionsController {
             ps.setString(1, null);//auto-increments the primary key
 
             //A function which fills the ps with the correct values
-            fillColumn(accountID, balanceChange, categoryID, description, date, standingOrderID, ps, 1);
+            fillColumn(accountID, balanceChange, categoryID, description, date, standingOrderID, currency, ps, 1);
 
             ps.executeUpdate();
 
@@ -88,7 +88,8 @@ public class TransactionsController {
                 item.put("Description", result.getString(5));
                 item.put("Date", result.getString(6));
                 item.put("StandingOrderID", result.getInt(7));
-                item.put("CategoryName",result.getString(8));
+                item.put("Currency",result.getString(8));
+                item.put("CategoryName",result.getString(9));
                 list.add(item);
             }
             return list.toString();
@@ -125,7 +126,8 @@ public class TransactionsController {
                 item.put("Description", result.getString(5));
                 item.put("Date", result.getString(6));
                 item.put("StandingOrderID", result.getInt(7));
-                item.put("CategoryName",result.getString(8));
+                item.put("Currency",result.getString(8));
+                item.put("CategoryName",result.getString(9));
                 return item.toString(); //If a transaction found then return it
             }
             else
@@ -144,7 +146,7 @@ public class TransactionsController {
     //This method edits a previous transaction and updates the account's balance to reflect this
     public String update(@FormDataParam("transactionID") int transactionID, @FormDataParam("categoryID") int categoryID, @FormDataParam("date") String date,
                          @FormDataParam("accountID") int accountID, @FormDataParam("balanceChange") int balanceChange,
-                         @FormDataParam("description") String description, @FormDataParam("standingOrderID") int standingOrderID) {
+                         @FormDataParam("description") String description, @FormDataParam("standingOrderID") int standingOrderID, @FormDataParam("currency") String currency) {
         try {
             System.out.println("Transactions/edit id = " + transactionID);
             //Stops any null balance transactions
@@ -157,9 +159,9 @@ public class TransactionsController {
             int accountChange = result.getInt(1) - balanceChange;
 
             PreparedStatement ps2 = main.db.prepareStatement("UPDATE Transactions SET AccountID = ?, BalanceChange = ?, CategoryID= ?, Description = ?, " +
-                    "Date = ?,  StandingOrderID = ? WHERE TransactionID = ?");
+                    "Date = ?,  StandingOrderID = ?, Currency = ? WHERE TransactionID = ?");
 
-            fillColumn(accountID, balanceChange, categoryID, description, date, standingOrderID, ps2, 0);
+            fillColumn(accountID, balanceChange, categoryID, description, date, standingOrderID, currency, ps2, 0);
             ps2.setInt(7, transactionID);
             ps2.executeUpdate();
 
@@ -219,7 +221,7 @@ public class TransactionsController {
     /*This method is used to efficiently fill the ps,
     as many API paths have nearly identical code within the class
     when filling in prepared statement*/
-    private static void fillColumn(int accountID, int balanceChange, int categoryID, String description, String date, int standingOrderID, PreparedStatement ps, int column) throws SQLException {
+    private static void fillColumn(int accountID, int balanceChange, int categoryID, String description, String date, int standingOrderID,String currency, PreparedStatement ps, int column) throws SQLException {
 
         ps.setInt(1 + column, accountID);
         ps.setInt(2 + column, balanceChange);
@@ -227,6 +229,7 @@ public class TransactionsController {
         ps.setString(4 + column, description);
         ps.setString(5 + column, date);
         ps.setInt(6 + column, standingOrderID);
+        ps.setString(7 + column,currency);
     }
 
     /*This function updates the balance of an account to reflect a transaction being created or edited

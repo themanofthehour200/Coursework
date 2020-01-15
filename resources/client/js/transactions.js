@@ -58,7 +58,9 @@ function editTransaction(event){
         document.getElementById("editHeading").innerHTML = 'Create New Transaction:';
 
         document.getElementById("transactionID").value = '';
-        document.getElementById("balanceChange").value = '';
+       /* document.getElementById("balanceChange").value = '';*/
+        document.getElementById("currency").value = '';
+        document.getElementById("currency").disabled = false;
         document.getElementById("description").value = '';
         document.getElementById("date").value = '';
 
@@ -77,6 +79,8 @@ function editTransaction(event){
 
                 document.getElementById("transactionID").value = id;
                 document.getElementById("balanceChange").value = String.fromCharCode(parseInt(signs["GDP2"],16)) + (responseData.BalanceChange /100).toFixed(2);
+                document.getElementById("currency").value = responseData.Currency;
+                document.getElementById("currency").disabled = true;
                 document.getElementById("category").value = responseData.CategoryID;
                 document.getElementById("description").value = responseData.Description;
                 document.getElementById("date").value = responseData["Date"];
@@ -113,13 +117,11 @@ function saveChanges(event) {
     //Creates account if a new transaction or updates the current transaction if it's being edited
     let apiPath = '';
     if (id === '') {
-        console.log("new transaction");
         apiPath = '/Transactions/create';
-
         formData.set("balanceChange",formData.get("balanceChange")*100);
+        console.log(formData.get("balanceChange"));
 
     } else {
-        console.log("edit transaction");
         formData.set("balanceChange",(formData.get("balanceChange")).replace(/[^\d.-]/g, '')*100);
         apiPath = '/Transactions/edit';
     }
@@ -127,7 +129,6 @@ function saveChanges(event) {
     formData.append("accountID",Cookies.get("AccountID"));
     formData.set("categoryID",document.getElementById("category").value);
 
-    console.log("category ID is "+formData.get("categoryID"));
 
     fetch(apiPath, {method: 'post', body: formData}
     ).then(response => response.json()
@@ -236,7 +237,6 @@ function startUp(){
 
     //This saves the users names having to be searched up every time the user goes through the navigation links
 
-
     displayName(Cookies.get("FirstName"),Cookies.get("Surname"));
 }
 
@@ -268,7 +268,7 @@ function changeUser(event) {
         if (responseData.hasOwnProperty('error')) {
             alert(responseData.error);
         } else {
-            let accountAmount= String.fromCharCode(parseInt(signs[responseData.Currency+"2"],16)) + `${Math.floor((responseData.Balance * rates[responseData.Currency] /100)).toFixed(2)}`;
+            let accountAmount= String.fromCharCode(parseInt(signs[responseData.Currency+"2"],16)) + `${(Math.floor(responseData.Balance * rates[responseData.Currency])/100).toFixed(2)}`;
             document.getElementById('chosenAccountBalance').innerText = "  Current Account Balance: "+ accountAmount;
 
         }

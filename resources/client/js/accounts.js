@@ -118,10 +118,9 @@ function deleteAccount(){
     fetch('/Accounts/accessCheck', {method: 'post', body: formData}
     ).then(response => response.json()
     ).then(responseData => {
-        console.log("This far");
         if (responseData.hasOwnProperty('error')) {
             alert(responseData.error);
-        } else if (responseData.accessLevel !== 3) {
+        } else if (responseData.AccessLevel !== 3) {
             alert("You do not have a high enough access level on this account to complete this action");
         } else {
             const ok = confirm("Are you sure?");

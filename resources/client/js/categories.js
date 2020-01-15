@@ -1,8 +1,3 @@
-//Associated array of currency types to their signs
-let signs = {"EUR": "&#8364;", "GDP": "&#163;", "USD": "&#36;",
-    "EUR2":"20AC", "GDP2": "00A3","USD2":"0024"};
-let rates = {"GDP":1,"EUR" : 1.18, "USD": 1.31};
-
 function pageLoad() {
 
 
