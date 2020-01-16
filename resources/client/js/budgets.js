@@ -46,3 +46,29 @@ function startUp(){
     });
 }
 
+
+function logout() {
+    console.log("log out");
+
+    let formData = new FormData();
+    formData.append("userID", Cookies.get("UserID"));
+
+    fetch("/Users/logout", {method: 'post', body: formData}
+    ).then(response => response.json()
+    ).then(responseData => {
+        if (responseData.hasOwnProperty('error')) {
+
+            alert(responseData.error);
+
+        } else {
+            console.log("User logged out");
+            Cookies.remove("UserID");
+            Cookies.remove("Token");
+            Cookies.remove("FirstName");
+            Cookies.remove("Surname");
+            window.location.href = '/client/index.html';
+
+        }
+    });
+}
+
