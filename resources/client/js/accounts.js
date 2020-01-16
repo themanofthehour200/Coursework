@@ -1,7 +1,9 @@
 //Associated array of currency types to their signs
-let signs = {"EUR": "&#8364;", "GDP": "&#163;", "USD": "&#36;",
-            "EUR2":"20AC", "GDP2": "00A3","USD2":"0024"};
-let rates = {"GDP":1,"EUR" : 1.18, "USD": 1.31};
+let signs = {
+    "EUR": "&#8364;", "GDP": "&#163;", "USD": "&#36;",
+    "EUR2": "20AC", "GDP2": "00A3", "USD2": "0024"
+};
+let rates = {"GDP": 1, "EUR": 1.18, "USD": 1.31};
 
 function pageLoad() {
 
@@ -17,7 +19,7 @@ function pageLoad() {
         '<th class="last">Options</th>' +
         '</tr>';
 
-    fetch('/Accounts/viewAll/'+ Cookies.get("UserID"), {method: 'post'}
+    fetch('/Accounts/viewAll/' + Cookies.get("UserID"), {method: 'post'}
     ).then(response => response.json()
     ).then(accounts => {
 
@@ -27,7 +29,7 @@ function pageLoad() {
                 `<td>${account.AccountID}</td>` +
                 `<td>${account.AccountName}</td>` +
                 /*Works out the value of the balance with the correct currency*/
-                `<td>`+signs[account.Currency] + `${(Math.floor(account.Balance * rates[account.Currency])/100).toFixed(2)} </td>` +
+                `<td>` + signs[account.Currency] + `${(Math.floor(account.Balance * rates[account.Currency]) / 100).toFixed(2)} </td>` +
                 `<td>${account.Currency}</td>` +
                 `<td class="last">` +
                 `<button class='editButton' data-id='${account.AccountID}'>Edit</button>` +
@@ -58,7 +60,7 @@ function pageLoad() {
 
 }
 
-function editAccount(event){
+function editAccount(event) {
 
     const id = event.target.getAttribute("data-id");
 
@@ -88,8 +90,8 @@ function editAccount(event){
 
                 document.getElementById("accountID").value = id;
                 document.getElementById("accountName").value = responseData.AccountName;
-                document.getElementById("balance").value = String.fromCharCode(parseInt(signs[responseData.Currency+"2"],16)) +
-                    (Math.floor(responseData.Balance * rates[responseData.Currency])/100).toFixed(2);
+                document.getElementById("balance").value = String.fromCharCode(parseInt(signs[responseData.Currency + "2"], 16)) +
+                    (Math.floor(responseData.Balance * rates[responseData.Currency]) / 100).toFixed(2);
                 document.getElementById("balance").disabled = true;
                 document.getElementById("currency").value = responseData.Currency;
                 document.getElementById("originalCurrency").value = responseData.Currency;
@@ -108,17 +110,11 @@ function editAccount(event){
         '<th>Access Level</th>' +
         '</tr>';
 
-    fetch('/AccountManagers/list/'+ Cookies.get("AccountID"), {method: 'get'}
+    fetch('/AccountManagers/list/' + id, {method: 'get'}
     ).then(response => response.json()
     ).then(managers => {
 
         for (let manager of managers) {
-
-/*            console.log("userid: " + manager.UserID);
-            console.log("firstname: " + manager.FirstName);
-            console.log("surname: " + manager.Surname);
-            console.log("email: " + manager.Email);
-            console.log("uaccess levelserid: " + manager.AccessLevel);*/
 
             managerHTML += `<tr>` +
                 `<td>${manager.UserID}</td>` +
@@ -140,7 +136,7 @@ function editAccount(event){
 
         //Creates a form and gets the users ID and the account ID
         let formData = new FormData();
-        formData.append("accountID", Cookies.get("AccountID"));
+        formData.append("accountID", id);
         formData.append("userID", Cookies.get("UserID"));
 
 
@@ -149,18 +145,19 @@ function editAccount(event){
         ).then(responseData => {
             if (responseData.hasOwnProperty('error')) {
                 alert(responseData.error);
-            } else{
+            } else {
                 let accessLevel = responseData.AccessLevel;
                 let deleteButtons = document.getElementsByClassName("deleteManagerButton");
 
-                if(accessLevel === 3){
+                if (accessLevel === 3) {
                     for (let button of deleteButtons) {
                         button.addEventListener("click", deleteManager);
                         button.disabled = false;
                     }
 
                     document.getElementById("addManager").disabled = false;
-                }else{
+                    document.getElementById("addManager").addEventListener("click",addManager);
+                } else {
 
                     for (let button of deleteButtons) {
                         button.disabled = true;
@@ -173,16 +170,47 @@ function editAccount(event){
 
     });
 
-    /*document.getElementById("saveButton").addEventListener("click", saveChanges);
-    document.getElementById("cancelButton").addEventListener("click", cancelChanges);*/
-
-
     document.getElementById("listDiv").style.display = 'none';
     document.getElementById("newButton").style.display = 'none';
     document.getElementById("editDiv").style.display = 'block';
 }
 
-function deleteManager(){
+function addManager() {
+    alert("adding a manager");
+
+    const form = document.getElementById("managerForm");
+    const formData = new FormData(form);
+
+    for(let pair of formData.entries()) {
+        console.log(pair[0]+ ', '+ pair[1]);
+    }
+
+    fetch('/Users/emailSearch/' + formData.get("email"), {method: 'get'}
+    ).then(response => response.json()
+    ).then(responseData => {
+        console.log("has done api");
+        if (responseData.hasOwnProperty('error')) {
+            alert("User couldn't be found");
+        } else {
+            console.log(responseData.UserID)
+            fetch('/AccountManagers/new', {method: 'post', body: formData}
+            ).then(response => response.json()
+            ).then(responseData => {
+                if (responseData.hasOwnProperty('error')) {
+                    alert(responseData.error);
+                } else {
+                    alert("Manager added");
+                }
+            });
+        }
+    });
+
+    const ok = confirm("Are you sure?");
+    editAccount();
+
+}
+
+function deleteManager() {
 
 
     //Creates a form and gets the users ID and the account ID
@@ -190,8 +218,8 @@ function deleteManager(){
     let formData = new FormData();
     formData.append("controlID", controlID);
 
-    for(let pair of formData.entries()) {
-        console.log(pair[0]+ ', '+ pair[1]);
+    for (let pair of formData.entries()) {
+        console.log(pair[0] + ', ' + pair[1]);
     }
 
 
@@ -213,7 +241,7 @@ function deleteManager(){
     }
 }
 
-function deleteAccount(event){
+function deleteAccount(event) {
 
 
     //Creates a form and gets the users ID and the account ID
@@ -258,7 +286,7 @@ function deleteAccount(event){
 function saveChanges() {
     event.preventDefault();
 
-    document.getElementById("balance").disabled=false;
+    document.getElementById("balance").disabled = false;
 
     //Makes sure that all parts have been filled in
     if (document.getElementById("accountName").value.trim() === '') {
@@ -288,15 +316,15 @@ function saveChanges() {
     if (id === '') {
         console.log("new account");
         apiPath = '/Accounts/new';
-        console.log(Math.floor((formData.get("balance")*100)/rates[formData.get("currency")]));
+        console.log(Math.floor((formData.get("balance") * 100) / rates[formData.get("currency")]));
         // noinspection JSCheckFunctionSignatures
-        formData.set("balance",Math.ceil((formData.get("balance")*100)/rates[formData.get("currency")]));
+        formData.set("balance", Math.ceil((formData.get("balance") * 100) / rates[formData.get("currency")]));
 
     } else {
         console.log("edit account");
         console.log(formData.get("currency"));
         console.log(formData.get("balance").replace(/[^\d.-]/g, '')/*/rates[formData.get("currency"));*/);
-        formData.set("balance",Math.ceil((formData.get("balance").replace(/[^\d.-]/g, ''))/rates[formData.get("originalCurrency")]*100));
+        formData.set("balance", Math.ceil((formData.get("balance").replace(/[^\d.-]/g, '')) / rates[formData.get("originalCurrency")] * 100));
         apiPath = '/Accounts/edit';
     }
 
@@ -318,11 +346,11 @@ function saveChanges() {
 }
 
 
-function showVals(value){
+function showVals(value) {
     console.log(value);
 }
 
-function cancelChanges(){
+function cancelChanges() {
     event.preventDefault();
 
     pageLoad();
@@ -343,7 +371,7 @@ function logout() {
     let formData = new FormData();
     formData.append("userID", Cookies.get("UserID"));
 
-    fetch("/Users/logout", {method: 'post', body:formData}
+    fetch("/Users/logout", {method: 'post', body: formData}
     ).then(response => response.json()
     ).then(responseData => {
         if (responseData.hasOwnProperty('error')) {
@@ -362,7 +390,7 @@ function logout() {
     });
 }
 
-function startUp(){
+function startUp() {
     let userID = Cookies.get("UserID");
     let token = Cookies.get("Token");
 
@@ -387,10 +415,10 @@ function startUp(){
     //This saves the users names having to be searched up every time the user goes through the navigation links
 
 
-    displayName(Cookies.get("FirstName"),Cookies.get("Surname"));
+    displayName(Cookies.get("FirstName"), Cookies.get("Surname"));
 }
 
-function displayName(firstname, surname){
+function displayName(firstname, surname) {
     let logInMessage = "You are currently logged in as ";
     logInMessage += "<em>";
     logInMessage += firstname + " ";

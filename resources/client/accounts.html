@@ -75,6 +75,7 @@
                 </div>
             </form>
         </div>
+
         <div class = "column right" id = "editManagerPortal">
             <h2>Editing Account Managers</h2>
             <h3 id ="currentManagerTitle">Current Managers:</h3>
@@ -82,7 +83,14 @@
             <!--The list of all of the users accounts that they currently have access to-->
             <div id ="managerList"></div>
 
-            <button id="addManager" class="editButton">Create Account</button>
+            <hr />
+            <form id="managerForm">
+
+                <label for="newEmail" class="label" id="newEmailLabel">New manager's email:</label>
+                <input type="text" name="email" id="newEmail">
+
+                <input type = "submit" id="addManager" value = "Add Account Manager" class="editButton">
+            </form>
         </div>
     </div>
 

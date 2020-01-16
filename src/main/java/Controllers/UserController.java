@@ -41,6 +41,29 @@ public class UserController {
         }
     }
 
+    @GET
+    @Path("emailSearch/{email}")
+    @Produces(MediaType.APPLICATION_JSON)
+
+    //This is used to verify if the user that is being added as a manager exists
+    public String emailSearch(@PathParam("email") String email){
+        System.out.println("/Users/emailSearch");
+
+        try{
+            PreparedStatement ps = main.db.prepareStatement("SELECT UserID FROM Users WHERE Email = ?");
+            ps.setString(1,email);
+            ResultSet result = ps.executeQuery();
+
+            JSONObject item = new JSONObject();
+            item.put("UserID", result.getInt(1));//If any results are brought back is whether the token is correct or not
+            return item.toString();
+
+        } catch (Exception e){
+            System.out.println("Database error: " + e.getMessage());
+            return "{\"error\": \"Unable to list items, please see server console for more info.\"}";
+        }
+    }
+
 //This is the method for logging in
     @POST
     @Path("login")

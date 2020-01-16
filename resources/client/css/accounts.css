@@ -172,3 +172,7 @@ table {
 #currentManagerTitle{
     text-align: left;
 }
+
+#newEmailLabel{
+    width:15%;
+}
