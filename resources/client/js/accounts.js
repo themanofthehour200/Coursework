@@ -61,11 +61,10 @@ function pageLoad() {
 }
 
 function editAccount(event) {
-
-    const id = event.target.getAttribute("data-id");
+    window.accountID = event.target.getAttribute("data-id");
 
     //If no id exists it means that tis function is being called by the 'create new account' button instead
-    if (id === null) {
+    if (accountID === null) {
 
         document.getElementById("editHeading").innerHTML = 'Create New Account:';
         document.getElementById("editManagerPortal").style.display = 'none';
@@ -78,7 +77,7 @@ function editAccount(event) {
     } else {
         document.getElementById("editManagerPortal").style.display = 'block';
 
-        fetch('/Accounts/search/' + id, {method: 'get'}
+        fetch('/Accounts/search/' + accountID, {method: 'get'}
         ).then(response => response.json()
         ).then(responseData => {
 
@@ -88,7 +87,7 @@ function editAccount(event) {
 
                 document.getElementById("editHeading").innerHTML = 'Editing ' + responseData.AccountName + ':';
 
-                document.getElementById("accountID").value = id;
+                document.getElementById("accountID").value = accountID;
                 document.getElementById("accountName").value = responseData.AccountName;
                 document.getElementById("balance").value = String.fromCharCode(parseInt(signs[responseData.Currency + "2"], 16)) +
                     (Math.floor(responseData.Balance * rates[responseData.Currency]) / 100).toFixed(2);
@@ -101,6 +100,11 @@ function editAccount(event) {
 
         });
     }
+
+    formatManagers();
+}
+
+function formatManagers(){
     //Formatting all managers relating to the account
     let managerHTML = `<table>` +
         '<tr>' +
@@ -110,7 +114,7 @@ function editAccount(event) {
         '<th>Access Level</th>' +
         '</tr>';
 
-    fetch('/AccountManagers/list/' + id, {method: 'get'}
+    fetch('/AccountManagers/list/' + accountID, {method: 'get'}
     ).then(response => response.json()
     ).then(managers => {
 
@@ -131,12 +135,11 @@ function editAccount(event) {
 
         document.getElementById("managerList").innerHTML = managerHTML;
 
-        //checks if the user has permission to create/delete/edit transactions
 
 
         //Creates a form and gets the users ID and the account ID
         let formData = new FormData();
-        formData.append("accountID", id);
+        formData.append("accountID", accountID);
         formData.append("userID", Cookies.get("UserID"));
 
 
@@ -155,6 +158,7 @@ function editAccount(event) {
                         button.disabled = false;
                     }
 
+                    document.getElementById("addManager").setAttribute('data-id',accountID);
                     document.getElementById("addManager").disabled = false;
                     document.getElementById("addManager").addEventListener("click",addManager);
                 } else {
@@ -170,13 +174,17 @@ function editAccount(event) {
 
     });
 
+
+
     document.getElementById("listDiv").style.display = 'none';
     document.getElementById("newButton").style.display = 'none';
     document.getElementById("editDiv").style.display = 'block';
 }
 
-function addManager() {
-    alert("adding a manager");
+function addManager(event) {
+    event.preventDefault();
+    const accountID = event.target.getAttribute("data-id");
+
 
     const form = document.getElementById("managerForm");
     const formData = new FormData(form);
@@ -185,29 +193,45 @@ function addManager() {
         console.log(pair[0]+ ', '+ pair[1]);
     }
 
-    fetch('/Users/emailSearch/' + formData.get("email"), {method: 'get'}
-    ).then(response => response.json()
-    ).then(responseData => {
-        console.log("has done api");
-        if (responseData.hasOwnProperty('error')) {
-            alert("User couldn't be found");
-        } else {
-            console.log(responseData.UserID)
-            fetch('/AccountManagers/new', {method: 'post', body: formData}
-            ).then(response => response.json()
-            ).then(responseData => {
-                if (responseData.hasOwnProperty('error')) {
-                    alert(responseData.error);
-                } else {
-                    alert("Manager added");
+
+    if(formData.get("email")===null || formData.get("email") ===''){
+        alert("Please enter an email")
+    }else {
+
+        fetch('/Users/emailSearch',{body:formData ,method: 'post'}
+        ).then(response => response.json()
+        ).then(responseData => {
+            if (responseData.hasOwnProperty('error')) {
+                alert("User couldn't be found");
+            } else {
+
+
+                formData.delete("email");
+                formData.append("managerID",responseData.UserID);
+                formData.append("accountID",accountID);
+
+
+                for(let pair of formData.entries()) {
+                    console.log(pair[0]+ ', '+ pair[1]);
                 }
-            });
-        }
-    });
 
-    const ok = confirm("Are you sure?");
-    editAccount();
 
+                fetch('/AccountManagers/new', {method: 'post', body: formData}
+                ).then(response => response.json()
+                ).then(managerData => {
+                    if (managerData.hasOwnProperty('error')) {
+                        if(managerData.error === "User is already a manager") alert("User is already a manager for this account");
+                        else alert(managerData.error);
+                    } else {
+                        alert("Manager added");
+                        formatManagers();
+                    }
+                });
+            }
+        });
+        document.getElementById("newEmail").value='';
+        document.getElementById("accessLevel").value=1;
+    }
 }
 
 function deleteManager() {
@@ -234,7 +258,7 @@ function deleteManager() {
                     alert(responseData.error);
                 } else {
                     console.log("Manager deleted");
-                    editAccount();
+                    formatManagers(accountID);
                 }
             }
         );
@@ -337,7 +361,7 @@ function saveChanges() {
             alert(responseData.error);
         } else {
             document.getElementById("listDiv").style.display = 'block';
-            document.getElementById("newButton").style.display = 'block';
+            document.getElementById("newButton").style.display = 'inline';
             document.getElementById("editDiv").style.display = 'none';
             pageLoad();
         }
@@ -360,7 +384,7 @@ function cancelChanges() {
     """""""""""""""""""*/
 
     document.getElementById("listDiv").style.display = 'block';
-    document.getElementById("newButton").style.display = 'block';
+    document.getElementById("newButton").style.display = 'inline';
     document.getElementById("editDiv").style.display = 'none';
 }
 

@@ -32,7 +32,7 @@
 
         </div>
     </div>
-    <h1>Accounts</h1>
+    <h1>Accounts  </h1>
 
     <!--The list of all of the users accounts that they currently have access to-->
     <div id ="listDiv"></div>
@@ -78,19 +78,36 @@
 
         <div class = "column right" id = "editManagerPortal">
             <h2>Editing Account Managers</h2>
-            <h3 id ="currentManagerTitle">Current Managers:</h3>
+            <h3 class ="currentManagerTitle">Current Managers:</h3>
 
             <!--The list of all of the users accounts that they currently have access to-->
             <div id ="managerList"></div>
 
             <hr />
+            <h3 class ="currentManagerTitle">Add Manager:</h3>
             <form id="managerForm">
 
-                <label for="newEmail" class="label" id="newEmailLabel">New manager's email:</label>
+                <label for="newEmail" class="label" id="newEmailLabel">New manager's email:     </label>
                 <input type="text" name="email" id="newEmail">
+
+                <label for="accessLevel" class="label">Access Level:     </label>
+                <select name = "accessLevel" id = "accessLevel">
+                    <option value=1  selected>1</option>
+                    <option value=2>2</option>
+                    <option value=3>3</option>
+                </select>
 
                 <input type = "submit" id="addManager" value = "Add Account Manager" class="editButton">
             </form>
+
+            <div id = "levelExplain">
+                <p>The levels explained:</p>
+                <ol>
+                    <li>Users can perform transactions on account, but cannot edit or delete previous ones. User cannot edit account details</li>
+                    <li>Users can perform transactions, as well as edit and delete previous ones. User can edit account details, but can't add or remove managers</li>
+                    <li>Users have all privileges to the account</li>
+                </ol>
+            </div>
         </div>
     </div>
 

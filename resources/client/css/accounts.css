@@ -140,7 +140,6 @@ form div {
 
 .right {
     width: 75%;
-    background-color: red;
 }
 
 .label {
@@ -169,10 +168,16 @@ table {
     box-sizing: border-box;
 }
 
-#currentManagerTitle{
+.currentManagerTitle{
     text-align: left;
 }
 
+
 #newEmailLabel{
-    width:15%;
+    width:20%;
+}
+
+#levelExplain{
+    text-align:left;
+    font-style:italic;
 }

@@ -62,7 +62,7 @@ public class AccountManagersController{
     @Produces(MediaType.APPLICATION_JSON)
 
     //This method is used to add another user as a manager on an existing account
-    public String insert(@FormDataParam("accountID") int accountID, @FormDataParam("managerID") int managerID, @FormDataParam("AccessLevel") int accessLevel){
+    public String insert(@FormDataParam("accountID") int accountID, @FormDataParam("managerID") int managerID, @FormDataParam("accessLevel") int accessLevel){
 
         try{
             out.println("/AccountManagers/new");

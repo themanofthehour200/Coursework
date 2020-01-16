@@ -41,12 +41,13 @@ public class UserController {
         }
     }
 
-    @GET
-    @Path("emailSearch/{email}")
+    @POST
+    @Path("emailSearch")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
 
     //This is used to verify if the user that is being added as a manager exists
-    public String emailSearch(@PathParam("email") String email){
+    public String emailSearch(@FormDataParam("email") String email){
         System.out.println("/Users/emailSearch");
 
         try{
