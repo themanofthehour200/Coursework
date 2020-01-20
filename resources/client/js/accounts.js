@@ -10,7 +10,7 @@ function pageLoad() {
 
     startUp();
 
-    let accountsHTML = `<table>` +
+    let accountsHTML = `<table border="1">` +
         '<tr>' +
         '<th>ID</th>' +
         '<th>Account Name</th>' +
@@ -19,9 +19,11 @@ function pageLoad() {
         '<th class="last">Options</th>' +
         '</tr>';
 
+
     fetch('/Accounts/viewAll/' + Cookies.get("UserID"), {method: 'post'}
     ).then(response => response.json()
     ).then(accounts => {
+        let permission = [];
 
         for (let account of accounts) {
 
@@ -36,20 +38,37 @@ function pageLoad() {
                 `<button class='deleteButton' data-id='${account.AccountID}'>Delete</button>` +
                 `</td>` +
                 `</tr>`;
+                //Stores the accesslevel of the user on the account so edit/delete buttons should be disabled or not
+            permission.push(account.AccessLevel);
         }
 
         accountsHTML += '</table>';
 
+        console.log(permission);
+
         document.getElementById("listDiv").innerHTML = accountsHTML;
 
+        //Goes through the buttons and decides if they should be disabled or not
         let editButtons = document.getElementsByClassName("editButton");
-        for (let button of editButtons) {
-            button.addEventListener("click", editAccount);
+        let deleteButtons = document.getElementsByClassName("deleteButton");
+
+        for (let i = 0; i < editButtons.length; i++) {
+            if(permission[i] === 1){
+                editButtons[i].disabled = true;
+                deleteButtons[i].disabled = true;
+            }else{
+                editButtons[i].disabled = false;
+                editButtons[i].addEventListener("click", editAccount);
+            }
         }
 
-        let deleteButtons = document.getElementsByClassName("deleteButton");
-        for (let button of deleteButtons) {
-            button.addEventListener("click", deleteAccount);
+        for (let i = 0; i < deleteButtons.length; i++) {
+            if(permission[i] === 1){
+                deleteButtons[i].disabled = true;
+            }else{
+                deleteButtons[i].disabled = false;
+                deleteButtons[i].addEventListener("click", deleteAccount);
+            }
         }
 
     });
@@ -57,6 +76,43 @@ function pageLoad() {
     document.getElementById("saveButton").addEventListener("click", saveChanges);
     document.getElementById("cancelButton").addEventListener("click", cancelChanges);
 
+
+}
+function startUp() {
+    let userID = Cookies.get("UserID");
+    let token = Cookies.get("Token");
+
+    let formData = new FormData();
+    formData.append("userID", userID);
+    formData.append("token", token);
+
+
+    /*This validates that the client's token corresponds to a logged in user*/
+    fetch("/Users/validate", {method: 'post', body: formData}
+    ).then(response => response.json()
+    ).then(responseData => {
+        if (responseData.hasOwnProperty('error')) {
+            alert(responseData.error);
+            window.location.href = '/client/index.html';
+        } else if (!responseData.found) {
+            console.log("Invalid log on details");
+            window.location.href = '/client/index.html';
+        }
+    });
+
+    //This saves the users names having to be searched up every time the user goes through the navigation links
+
+
+    displayName(Cookies.get("FirstName"), Cookies.get("Surname"));
+}
+
+function displayName(firstname, surname) {
+    let logInMessage = "You are currently logged in as ";
+    logInMessage += "<em>";
+    logInMessage += firstname + " ";
+    logInMessage += surname;
+    logInMessage += "</em>";
+    document.getElementById("logInMessage").innerHTML = logInMessage;
 
 }
 
@@ -106,7 +162,7 @@ function editAccount(event) {
 
 function formatManagers(){
     //Formatting all managers relating to the account
-    let managerHTML = `<table>` +
+    let managerHTML = `<table border="1">` +
         '<tr>' +
         '<th>User ID</th>' +
         '<th>Name</th>' +
@@ -234,7 +290,7 @@ function addManager(event) {
     }
 }
 
-function deleteManager() {
+function deleteManager(event) {
 
 
     //Creates a form and gets the users ID and the account ID
@@ -266,48 +322,32 @@ function deleteManager() {
 }
 
 function deleteAccount(event) {
-
-
     //Creates a form and gets the users ID and the account ID
     let accountID = event.target.getAttribute("data-id");
-    let formData = new FormData();
-    formData.append("accountID", accountID);
-    formData.append("userID", Cookies.get("UserID"));
 
+    const ok = confirm("Are you sure?");
 
-    fetch('/Accounts/accessCheck', {method: 'post', body: formData}
-    ).then(response => response.json()
-    ).then(responseData => {
-        if (responseData.hasOwnProperty('error')) {
-            alert(responseData.error);
-        } else if (responseData.AccessLevel !== 3) {
-            alert("You do not have a high enough access level on this account to complete this action");
-        } else {
-            const ok = confirm("Are you sure?");
+    if (ok === true) {
 
-            if (ok === true) {
+        let formData = new FormData();
+        formData.append("accountID", accountID);
 
-                let formData = new FormData();
-                formData.append("accountID", accountID);
-
-                fetch('/Accounts/delete', {method: 'post', body: formData}
-                ).then(response => response.json()
-                ).then(responseData => {
-                        if (responseData.hasOwnProperty('error')) {
-                            alert(responseData.error);
-                        } else {
-                            console.log("Account deleted");
-                            pageLoad();
-                        }
-                    }
-                );
+        fetch('/Accounts/delete', {method: 'post', body: formData}
+        ).then(response => response.json()
+        ).then(responseData => {
+                if (responseData.hasOwnProperty('error')) {
+                    alert(responseData.error);
+                } else {
+                    console.log("Account deleted");
+                    pageLoad();
+                }
             }
-        }
-    });
+        );
+    }
 }
 
 
-function saveChanges() {
+function saveChanges(event) {
     event.preventDefault();
 
     document.getElementById("balance").disabled = false;
@@ -370,11 +410,7 @@ function saveChanges() {
 }
 
 
-function showVals(value) {
-    console.log(value);
-}
-
-function cancelChanges() {
+function cancelChanges(event) {
     event.preventDefault();
 
     pageLoad();
@@ -414,42 +450,6 @@ function logout() {
     });
 }
 
-function startUp() {
-    let userID = Cookies.get("UserID");
-    let token = Cookies.get("Token");
 
-    let formData = new FormData();
-    formData.append("userID", userID);
-    formData.append("token", token);
-
-
-    /*This validates that the client's token corresponds to a logged in user*/
-    fetch("/Users/validate", {method: 'post', body: formData}
-    ).then(response => response.json()
-    ).then(responseData => {
-        if (responseData.hasOwnProperty('error')) {
-            alert(responseData.error);
-            window.location.href = '/client/index.html';
-        } else if (!responseData.found) {
-            console.log("Invalid log on details");
-            window.location.href = '/client/index.html';
-        }
-    });
-
-    //This saves the users names having to be searched up every time the user goes through the navigation links
-
-
-    displayName(Cookies.get("FirstName"), Cookies.get("Surname"));
-}
-
-function displayName(firstname, surname) {
-    let logInMessage = "You are currently logged in as ";
-    logInMessage += "<em>";
-    logInMessage += firstname + " ";
-    logInMessage += surname;
-    logInMessage += "</em>";
-    document.getElementById("logInMessage").innerHTML = logInMessage;
-
-}
 
 
