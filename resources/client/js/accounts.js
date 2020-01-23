@@ -8,7 +8,7 @@ let rates = {"GDP": 1, "EUR": 1.18, "USD": 1.31};
 function pageLoad() {
 
 
-    startUp();
+    verify();
 
     let accountsHTML = `<table>` +
         '<tr>' +
@@ -369,11 +369,6 @@ function saveChanges() {
 
 }
 
-
-function showVals(value) {
-    console.log(value);
-}
-
 function cancelChanges() {
     event.preventDefault();
 
@@ -414,7 +409,7 @@ function logout() {
     });
 }
 
-function startUp() {
+function verify() {
     let userID = Cookies.get("UserID");
     let token = Cookies.get("Token");
 
