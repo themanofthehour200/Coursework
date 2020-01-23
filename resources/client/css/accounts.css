@@ -95,6 +95,14 @@ th.last {
     background-color: grey;
 }
 
+.editButton:disabled, .editButton:disabled:hover{
+    background-color:white;
+}
+
+.deleteButton:disabled, .deleteButton:disabled:hover{
+    background-color:white;
+}
+
 #newButton {
     background-color: cornflowerblue;
     text-align: center;
@@ -161,6 +169,7 @@ form div {
 
 table {
     width: 90%;
+    border-collapse: collapse;
 }
 
 

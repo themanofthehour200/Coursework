@@ -25,7 +25,7 @@ public class AccountController {
     public String viewAll(@PathParam("id") int userID) {
         JSONArray list = new JSONArray();
         try{
-        PreparedStatement ps = main.db.prepareStatement("SELECT * FROM Accounts INNER JOIN AccountManagers AM ON Accounts.AccountID = AM.AccountID AND AM.ManagerID = ?");
+        PreparedStatement ps = main.db.prepareStatement("SELECT A.AccountID, A.AccountName, A.Balance, A.Currency, AM.AccessLevel FROM Accounts A INNER JOIN AccountManagers AM ON A.AccountID = AM.AccountID AND AM.ManagerID = ?");
         ps.setInt(1,userID);
 
         ResultSet result = ps.executeQuery();
@@ -36,6 +36,7 @@ public class AccountController {
             item.put("AccountName", result.getString(2));
             item.put("Balance", result.getInt(3));
             item.put("Currency", result.getString(4));
+            item.put("AccessLevel",result.getInt(5));
             list.add(item);
         }
         return list.toString();
