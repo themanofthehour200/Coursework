@@ -20,7 +20,7 @@ function pageLoad() {
         '</tr>';
 
 
-    fetch('/Accounts/viewAll/' + Cookies.get("UserID"), {method: 'post'}
+    fetch('/Accounts/viewAll/' + Cookies.get("UserID"), {method: 'get'}
     ).then(response => response.json()
     ).then(accounts => {
         let permission = [];
@@ -43,8 +43,6 @@ function pageLoad() {
         }
 
         accountsHTML += '</table>';
-
-        console.log(permission);
 
         document.getElementById("listDiv").innerHTML = accountsHTML;
 
@@ -119,7 +117,7 @@ function displayName(firstname, surname) {
 function editAccount(event) {
     window.accountID = event.target.getAttribute("data-id");
 
-    //If no id exists it means that tis function is being called by the 'create new account' button instead
+    //If no id exists it means that this function is being called by the 'create new account' button instead
     if (accountID === null) {
 
         document.getElementById("editHeading").innerHTML = 'Create New Account:';
@@ -237,54 +235,58 @@ function formatManagers(){
     document.getElementById("editDiv").style.display = 'block';
 }
 
+//This function is used to add a new user as a manager to an account
 function addManager(event) {
     event.preventDefault();
+
+    //Retrieves the accountID in question
     const accountID = event.target.getAttribute("data-id");
 
 
+    //Gets the email and access level that the user has input
     const form = document.getElementById("managerForm");
     const formData = new FormData(form);
 
-    for(let pair of formData.entries()) {
-        console.log(pair[0]+ ', '+ pair[1]);
-    }
 
-
+    //If the user hasn't entered an email then an alert is given
     if(formData.get("email")===null || formData.get("email") ===''){
         alert("Please enter an email")
     }else {
 
+        //This validates that the user being added as a manager exists within the database
         fetch('/Users/emailSearch',{body:formData ,method: 'post'}
         ).then(response => response.json()
         ).then(responseData => {
+            //If the email doesn't correspond to an email then give an error
             if (responseData.hasOwnProperty('error')) {
-                alert("User couldn't be found");
-            } else {
+                alert("The entered user couldn't be found,\nis that definitely the correct email address for the user?");
 
+                //If the user has been found then they can be added as a manager on the account
+            } else {
 
                 formData.delete("email");
                 formData.append("managerID",responseData.UserID);
                 formData.append("accountID",accountID);
 
-
-                for(let pair of formData.entries()) {
-                    console.log(pair[0]+ ', '+ pair[1]);
-                }
-
-
                 fetch('/AccountManagers/new', {method: 'post', body: formData}
                 ).then(response => response.json()
                 ).then(managerData => {
                     if (managerData.hasOwnProperty('error')) {
+                        //If the error can be identified then it is made into a user-friendly alert
                         if(managerData.error === "User is already a manager") alert("User is already a manager for this account");
                         else alert(managerData.error);
                     } else {
+                        //lets the user know that a manager has been added
                         alert("Manager added");
+
+                        //re-formats all of the managers to reflect the addition
                         formatManagers();
                     }
                 });
             }
         });
+
+        //clears the input boxes for the next addition
         document.getElementById("newEmail").value='';
         document.getElementById("accessLevel").value=1;
     }

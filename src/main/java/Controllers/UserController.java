@@ -271,9 +271,16 @@ public class UserController {
                          @FormDataParam("email") String email, @FormDataParam("phoneNumber") String phoneNumber, @FormDataParam("password") String password){
         try{
             /* This uses the varValid() methods in the 'main' class to ascertain if the inputs are in their valid formats or not. */
-            if (!main.nameValid(firstName) || !main.nameValid(surname) || dateOfBirth == null || !main.emailValid(email) || !main.passwordValid(password)) {
-                throw new Exception("One or more of the form parameters are missing or in the wrong data format");
+            if (!main.nameValid(firstName) || !main.nameValid(surname)){
+                return "{\"error\": \"Invalid names\"}";
+            }else if(dateOfBirth == null) {
+                return "{\"error\": \"Invalid DOB\"}";
+            } else if(!main.emailValid(email)){
+                return "{\"error\": \"Invalid email\"}";
+            }else if(!main.passwordValid(password)){
+                return "{\"error\": \"Invalid password\"}";
             }
+
 
             System.out.println("Users/edit id = " + userID);
 
