@@ -138,7 +138,7 @@ form div {
 .column {
     float: left;
     padding: 10px;
-    height: 300px; /* Should be removed. Only for demonstration */
+    height: 300px;
 }
 
 .left {
@@ -169,7 +169,9 @@ form div {
 
 table {
     width: 90%;
-    border-collapse: collapse;
+    border:none;
+    background-color: lightblue;
+    border-color: lightblue;
 }
 
 

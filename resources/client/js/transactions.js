@@ -218,11 +218,12 @@ function logout() {
     });
 }
 
-function verify(){
+//This function verifies that the user has the correct UserID and Token
+function verify() {
+
+    //gets what the user has set to their userId and token
     let userID = Cookies.get("UserID");
     let token = Cookies.get("Token");
-
-    console.log("User retrieved");
 
     let formData = new FormData();
     formData.append("userID", userID);
@@ -233,31 +234,26 @@ function verify(){
     fetch("/Users/validate", {method: 'post', body: formData}
     ).then(response => response.json()
     ).then(responseData => {
+        /*If the user can't be validated they should be returned to the welcome page, either due to an
+        * error or a malicious user*/
         if (responseData.hasOwnProperty('error')) {
             alert(responseData.error);
             window.location.href = '/client/index.html';
         } else if (!responseData.found) {
-            console.log("Invalid log on details");
             window.location.href = '/client/index.html';
-        } else {
-            console.log("User validated")
         }
     });
 
-    //This saves the users names having to be searched up every time the user goes through the navigation links
 
-    displayName(Cookies.get("FirstName"),Cookies.get("Surname"));
-}
-
-function displayName(firstname, surname){
+    //This displays the user's name at the top of the page to indicate they're logged in
     let logInMessage = "You are currently logged in as ";
     logInMessage += "<em>";
-    logInMessage += firstname + " ";
-    logInMessage += surname;
+    logInMessage += Cookies.get("FirstName").valueOf() + " ";
+    logInMessage += Cookies.get("Surname").valueOf();
     logInMessage += "</em>";
     document.getElementById("logInMessage").innerHTML = logInMessage;
-
 }
+
 
 function changeUser(event) {
 
