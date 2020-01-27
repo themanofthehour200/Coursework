@@ -161,7 +161,6 @@ function cancelChanges(event){
     changeUser();
 
     document.getElementById("listDiv").style.display = 'block';
-/*    document.getElementById("newButton").style.display = 'block';*/
     document.getElementById("editDiv").style.display = 'none';
 }
 

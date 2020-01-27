@@ -66,6 +66,8 @@ function pageLoad() {
             if(permission[i] === 1){
                 //edit button is disabled so that it can't be used and will also change appearance
                 editButtons[i].disabled = true;
+                //Use-ability information
+                editButtons[i].title = "Cannot edit account due to insufficient access level";
             }
             //If the level is high enough
             else{
@@ -81,6 +83,8 @@ function pageLoad() {
             if(permission[i] === 1){
                 //delete button is disabled so that it can't be used and will also change appearance
                 deleteButtons[i].disabled = true;
+                //Use-ability information
+                deleteButtons[i].title = "Cannot delete account due to insufficient access level";
             }else{
                 //Button is enabled and listener added
                 deleteButtons[i].disabled = false;
@@ -103,7 +107,7 @@ function editAccount(event) {
     //Verifies the user's session token
     verify();
 
-    //Sets the accountID as a global variable so it can be accesed by other functions as well
+    //Sets the accountID as a global variable so it can be accessed by other functions as well
     window.accountID = event.target.getAttribute("data-id");
 
     //If no id exists it means that this function is being called by the 'create new account' button instead
@@ -214,6 +218,11 @@ function formatManagers(){
 
                 //If the user has the correct permissions
                 if (accessLevel === 3) {
+
+                    document.getElementById("addManager").disabled = false;
+                    document.getElementById("newEmail").disabled=false;
+                    document.getElementById("accessLevel").disabled=false;
+
                     //enable all of the delete buttons make them call deleteManager when clicked
                     for (let button of deleteButtons) {
                         button.addEventListener("click", deleteManager);
@@ -236,6 +245,8 @@ function formatManagers(){
 
                     //disable the addManager button
                     document.getElementById("addManager").disabled = true;
+                    document.getElementById("newEmail").disabled=true;
+                    document.getElementById("accessLevel").disabled=true;
                 }
             }
         });
@@ -412,12 +423,14 @@ function saveChanges(event) {
         apiPath = '/Accounts/new';
         //Formats balance to be the numerical converted value of the input balance in pence
         formData.set("balance", Math.ceil((formData.get("balance") * 100) / rates[formData.get("currency")]));
+        alert("Account created!");
 
     } else {
         //Formats balance to be the numerical converted value of the input balance in pence
         //Also removes the currency symbol, which the user may well have added in as on edit it is put in the input box
         formData.set("balance", Math.ceil((formData.get("balance").replace(/[^\d.-]/g, '')) / rates[formData.get("originalCurrency")] * 100));
         apiPath = '/Accounts/edit';
+        alert("Account edited!");
     }
 
     //Creates/edits the account based on the apiPath chosen
