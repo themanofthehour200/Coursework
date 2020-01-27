@@ -10,7 +10,7 @@ function pageLoad() {
     //Choosing which account's transactions to look at
     let select = document.getElementById( 'accountChoose' );
 
-    fetch('/Accounts/viewAll/'+ Cookies.get("UserID"), {method: 'post'}
+    fetch('/Accounts/viewAll/'+ Cookies.get("UserID"), {method: 'get'}
     ).then(response => response.json()
     ).then(accounts => {
         for (let account of accounts) {
@@ -91,7 +91,6 @@ function editTransaction(event){
 
     }
     document.getElementById("listDiv").style.display = 'none';
-/*    document.getElementById("newButton").style.display = 'none';*/
     document.getElementById("editDiv").style.display = 'block';
 }
 
@@ -99,7 +98,7 @@ function saveChanges(event) {
     event.preventDefault();
 
     //Makes sure that all parts have been filled in
-    if (document.getElementById("balanceChange").value.trim() === '') {
+    if (document.getElementById("balanceChange").value.trim() === '' || document.getElementById("balanceChange").value.trim() === 0) {
         alert("Please provide a transaction amount.");
         return;
     }
@@ -112,6 +111,11 @@ function saveChanges(event) {
     const id = document.getElementById("transactionID").value;
     const form = document.getElementById("transactionForm");
     const formData = new FormData(form);
+
+    if(parseInt(formData.get("balanceChange")) === 0){
+        alert("Please provide a transaction amount.");
+        return;
+    }
 
     formData.append("standingOrderID", "0");
     formData.append("currency",document.getElementById("currency").value);
@@ -134,10 +138,6 @@ function saveChanges(event) {
     formData.append("accountID",Cookies.get("AccountID"));
 
 
-    for (let pair of formData.entries()) {
-        console.log(pair[0]+ ', ' + pair[1]);
-    }
-
 
     fetch(apiPath, {method: 'post', body: formData}
     ).then(response => response.json()
@@ -147,7 +147,6 @@ function saveChanges(event) {
             alert(responseData.error);
         } else {
             document.getElementById("listDiv").style.display = 'block';
-/*            document.getElementById("newButton").style.display = 'block';*/
             document.getElementById("editDiv").style.display = 'none';
             pageLoad();
             changeUser();
@@ -344,11 +343,13 @@ function changeUser(event) {
                     for (let button of editButtons) {
                         button.addEventListener("click", editTransaction);
                         button.disabled = false;
+                        button.title = "Edit transaction";
                     }
 
                     for (let button of deleteButtons) {
                         button.addEventListener("click", deleteTransaction);
                         button.disabled = false;
+                        button.title = "Delete transaction";
                     }
 
                     document.getElementById("newButton").disabled = false;
@@ -356,9 +357,11 @@ function changeUser(event) {
                     document.getElementById("accessDisplay").innerText = "Account permission insufficient to create/delete/edit transactions";
                     for (let button of editButtons) {
                         button.disabled = true;
+                        button.title = "Insufficient permission to edit transaction";
                     }
                     for (let button of deleteButtons) {
                         button.disabled = true;
+                        button.title = "Insufficient permission to delete transaction";
                     }
 
                     document.getElementById("newButton").disabled = true;

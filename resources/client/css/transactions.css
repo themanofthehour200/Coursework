@@ -91,11 +91,7 @@ th.last {
     background-color: silver;
 }
 
-.editButton:disabled, .editButton:disabled:hover{
-    background-color:white;
-}
-
-.deleteButton:disabled, .deleteButton:disabled:hover{
+.editButton:disabled, .editButton:disabled:hover, .deleteButton:disabled, .deleteButton:disabled:hover, #newButton:disabled, #newButton:disabled:hover{
     background-color:white;
 }
 

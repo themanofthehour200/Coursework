@@ -35,6 +35,7 @@ function pageLoad() {
 
             if(accessLevel !== 0 && !isNaN(accessLevel)) {
                 button.addEventListener("click", editCategory);
+                button.title = "Edit category";
             }else{
                 button.title = "Cannot edit category";
                 button.disabled = true;
@@ -47,6 +48,7 @@ function pageLoad() {
 
             if(accessLevel !== 0 && !isNaN(accessLevel)) {
                 button.addEventListener("click", deleteCategory);
+                button.title = "Delete Category";
             }else{
                 button.title = "Cannot delete category";
                 button.disabled = true;

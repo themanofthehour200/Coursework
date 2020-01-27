@@ -218,6 +218,7 @@ function formatManagers(){
                     for (let button of deleteButtons) {
                         button.addEventListener("click", deleteManager);
                         button.disabled = false;
+                        button.title = "Delete a manager";
                     }
 
                     //Sets the data-id of the addManager button and makes it call addManager() when clicked

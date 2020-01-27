@@ -16,7 +16,11 @@ function signup(event){
     ).then(response => response.json()
     ).then(responseData => {
         if (responseData.hasOwnProperty('error')) {
-            alert(responseData.error);
+            if(responseData.get('error') ==="Passwords don't match"){
+                alert("Passwords don't match");
+            }else {
+                alert(responseData.error);
+            }
         } else {
             alert("User account created!\n Returning to log in page")
             window.location.href = '/client/index.html';
